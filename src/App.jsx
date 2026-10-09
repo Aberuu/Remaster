@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import CaseStudyPage from './pages/CaseStudyPage';
 import ScrollHandler from './components/ScrollHandler';
 import SwissHeader from './components/layout/SwissHeader';
+import PixelCursor from './components/ui/PixelCursor';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <BrowserRouter>
         <ScrollHandler />
         <Analytics />
+        <PixelCursor />
         <div className="min-h-screen flex flex-col bg-[#fbfbfa] text-[#0A0A0A] transition-colors duration-200 relative">
           <SwissHeader />
           <div className="flex-grow pt-[52px]">

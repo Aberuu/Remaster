@@ -45,6 +45,13 @@ body {
   a { text-decoration: none; }
 }
 
+/* ─── Global Custom Pixel Cursor Support (Desktop Pointer Only) ─── */
+@media (hover: hover) and (pointer: fine) {
+  body, a, button, [role="button"], input, select, textarea, label, .pxctl {
+    cursor: none !important;
+  }
+}
+
 /* ─── Wild Design System Animations (from DESIGN.md) ─── */
 @keyframes heroLine {
   from { transform: translateY(115%); }
