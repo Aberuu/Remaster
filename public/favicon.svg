@@ -1,25 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#160e52"/>
-      <stop offset="1" stop-color="#050411"/>
-    </linearGradient>
-    <linearGradient id="a" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#39ff14"/>
-      <stop offset="0.55" stop-color="#8fff72"/>
-      <stop offset="1" stop-color="#5266ff"/>
-    </linearGradient>
-    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="1.4" result="b"/>
-      <feMerge>
-        <feMergeNode in="b"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-  </defs>
-  <rect x="1.5" y="1.5" width="61" height="61" rx="16" fill="url(#bg)"/>
-  <rect x="1.5" y="1.5" width="61" height="61" rx="16" fill="none" stroke="url(#a)" stroke-opacity="0.4" stroke-width="1.5"/>
-  <path d="M 20 48 L 32 11 L 44 48" fill="none" stroke="url(#a)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
-  <path d="M 26.5 41.5 L 37.5 41.5" fill="none" stroke="url(#a)" stroke-width="7" stroke-linecap="round" filter="url(#glow)"/>
-  <path d="M 27 30 L 37 34.5 L 27 39 Z" fill="#39ff14" filter="url(#glow)"/>
+  <rect width="64" height="64" rx="8" fill="#0A0A0A"/>
+  <!-- Row 1: Top of 'A' -->
+  <rect x="24" y="14" width="16" height="10" rx="1.5" fill="#FFFFFF"/>
+  <rect x="42" y="14" width="8" height="10" rx="1.5" fill="#e0492a"/>
+  <!-- Row 2: Middle crossbar of 'A' -->
+  <rect x="14" y="27" width="36" height="10" rx="1.5" fill="#FFFFFF"/>
+  <!-- Row 3: Legs of 'A' -->
+  <rect x="14" y="40" width="12" height="10" rx="1.5" fill="#FFFFFF"/>
+  <rect x="38" y="40" width="12" height="10" rx="1.5" fill="#FFFFFF"/>
 </svg>

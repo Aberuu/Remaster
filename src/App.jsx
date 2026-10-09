@@ -1,67 +1,29 @@
-import { useEffect, useRef } from 'react';
-import { Analytics } from "@vercel/analytics/react";
-import Header from './components/layout/Header';
-import Hero from './components/sections/Hero';
-import Identity from './components/sections/Identity';
-import VideoEditing from './components/sections/VideoEditing';
-import Photography from './components/sections/Photography';
-import Engineering from './components/sections/Engineering';
-import Process from './components/sections/Process';
-import SelectedWork from './components/sections/SelectedWork';
-import Manifesto from './components/sections/Manifesto';
-import Footer from './components/layout/Footer';
-import { setupSmoothScroll } from './lib/scroll';
-import { animateLoader, initAllAnimations, refreshScrollTriggers } from './animations';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
+import { ThemeProvider } from './context/ThemeContext';
+import HomePage from './pages/HomePage';
+import CaseStudyPage from './pages/CaseStudyPage';
+import ScrollHandler from './components/ScrollHandler';
+import SwissHeader from './components/layout/SwissHeader';
 
 function App() {
-  const rootRef = useRef(null);
-
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return undefined;
-
-    const scroll = setupSmoothScroll();
-    let destroyAnimations = null;
-
-    const loaderTween = animateLoader(() => {
-      destroyAnimations = initAllAnimations(root);
-      refreshScrollTriggers();
-    });
-
-    return () => {
-      loaderTween?.kill();
-      destroyAnimations?.();
-      scroll.destroy();
-    };
-  }, []);
-
   return (
-    <>
-    <Analytics />
-    <div ref={rootRef}>
-      <div className="loader" aria-hidden="true">
-        <div className="loader-word-wrap">
-          <p className="loader-word">Agaphe</p>
+    <ThemeProvider>
+      <BrowserRouter>
+        <ScrollHandler />
+        <Analytics />
+        <div className="min-h-screen flex flex-col bg-[#fbfbfa] text-[#0A0A0A] transition-colors duration-200 relative">
+          <SwissHeader />
+          <div className="flex-grow pt-[52px]">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/project/:id" element={<CaseStudyPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
         </div>
-        <div className="loader-track">
-          <div className="loader-fill" />
-        </div>
-      </div>
-
-      <Header />
-      <main>
-        <Hero />
-        <Identity />
-        <VideoEditing />
-        <Photography />
-        <Engineering />
-        <Process />
-        <SelectedWork />
-        <Manifesto />
-      </main>
-      <Footer />
-    </div>
-    </>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

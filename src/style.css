@@ -1,66 +1,146 @@
 @import 'tailwindcss';
+@import './css/tokens.css';
 
 @theme {
-  --color-bg: #ffffff;
-  --color-text: #0b0b0b;
-  --color-text-muted: #666666;
-  --color-neon: #39ff14;
-  --color-mint: #c8ffd4;
-  --color-surface: #f7f7f7;
-  --color-glow: rgba(57, 255, 20, 0.18);
+  --color-bg: var(--color-paper);
+  --color-text: var(--color-ink);
+  --color-text-muted: var(--color-ink-muted);
+  --color-surface: var(--color-surface);
 
-  --font-display: 'Syne', system-ui, sans-serif;
-  --font-body: 'DM Sans', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: var(--font-sans);
+  --font-body: var(--font-sans);
+  --font-mono: var(--font-mono);
 
-  --ease-expo: cubic-bezier(0.19, 1, 0.22, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  --gutter: clamp(20px, 5vw, 80px);
-  --header-h: 72px;
-}
-
-@font-face {
-  font-family: 'Inktera';
-  src: url('/fonts/inktera.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Derania';
-  src: url('/fonts/derania.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+  --gutter: clamp(16px, 4vw, 48px);
+  --header-h: 64px;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
-  background: var(--color-bg);
-  overflow-x: hidden;
-  scroll-behavior: auto;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  overflow-x: clip;
+  scroll-behavior: smooth;
 }
 
 body {
-  font-family: var(--font-body);
-  font-size: clamp(17px, 1.1vw, 20px);
-  line-height: 1.65;
-  color: var(--color-text);
-  background: var(--color-bg);
-  overflow-x: hidden;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-ink);
+  background-color: var(--color-paper);
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background: rgba(57, 255, 20, 0.35);
-  color: var(--color-text);
+  background-color: var(--color-accent-subtle);
+  color: var(--color-ink);
 }
 
-img { display: block; max-width: 100%; }
-a { color: inherit; text-decoration: none; }
+@layer base {
+  img { display: block; max-width: 100%; }
+  a { text-decoration: none; }
+}
+
+/* ─── Wild Design System Animations (from DESIGN.md) ─── */
+@keyframes heroLine {
+  from { transform: translateY(115%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes heroIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+
+/* ─── Playful Brutalist Utilities ─── */
+.brutal-card {
+  border: 1.5px solid var(--color-border);
+  box-shadow: var(--shadow-brutal);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+.brutal-card:hover {
+  border-color: var(--color-ink);
+  box-shadow: var(--shadow-brutal-hover);
+  transform: translate(-1px, -1px);
+}
+
+.brutal-btn {
+  border: 1.5px solid var(--color-ink);
+  box-shadow: var(--shadow-brutal);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+}
+.brutal-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-brutal-hover);
+}
+.brutal-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 0px 0px 0px transparent;
+}
+
+.brutal-stamp {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crosshair-corner {
+  position: relative;
+}
+.crosshair-corner::before,
+.crosshair-corner::after {
+  content: "+";
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1;
+  color: var(--color-ink-faint);
+  pointer-events: none;
+}
+.crosshair-corner::before {
+  top: -8px;
+  left: -8px;
+}
+.crosshair-corner::after {
+  bottom: -8px;
+  right: -8px;
+}
+
+/* Flanking Rail Writing Modes */
+.vertical-text-rail {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+}
 
 /* ─── Grain ─── */
 .grain {

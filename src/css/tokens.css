@@ -1,0 +1,72 @@
+/* Wild design system tokens (from DESIGN.md / craft.wild.as) */
+
+:root {
+  /* Exposed source variables from DESIGN.md */
+  --paper: #FFFFFF;
+  --ink: #0A0A0A;
+  --radius: 26px;
+  --maxw: 1176px;
+  --muted: #8b8b8b;
+  --line-2: rgba(10,10,10,.06);
+  --red: #e0492a;
+  --line: rgba(10,10,10,.12);
+  --mono: 'SFMono-Regular', ui-monospace, 'JetBrains Mono', Menlo, Consolas, monospace;
+  --neon: #d8ff00;
+  --gutter: clamp(24px, 4.5vw, 56px);
+  --cell: 14px;
+  --readw: 34ch;
+
+  /* Supplemental palette from DESIGN.md */
+  --support-neon: #dcfc04;
+  --support-warm: #f6d36d;
+  --support-ink: #1e2544;
+  --support-slate: #6b7385;
+  --support-muted: #b3b9ca;
+
+  /* Global alias mappings */
+  --color-paper: var(--paper);
+  --color-surface: #f9f9fa;
+  --color-surface-subtle: #f2f3f5;
+  --color-surface-hover: #eaebee;
+  --color-border: var(--line);
+  --color-border-subtle: var(--line-2);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--muted);
+  --color-ink-faint: var(--support-muted);
+  --color-ink-inverse: #FFFFFF;
+  --color-accent: var(--red);
+  --color-neon: var(--neon);
+  --color-focus: var(--red);
+
+  /* Explicit core colors */
+  --color-white: #FFFFFF;
+  --color-black: #000000;
+
+  /* Typography Stack */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: var(--mono);
+}
+
+[data-theme="dark"] {
+  --paper: #0A0A0A;
+  --ink: #FAF9F6;
+  --muted: #8E929B;
+  --line-2: rgba(250,249,246,.08);
+  --red: #FF5A36;
+  --line: rgba(250,249,246,.14);
+  --neon: #DCFC04;
+
+  --color-paper: var(--paper);
+  --color-surface: #141518;
+  --color-surface-subtle: #1c1d22;
+  --color-surface-hover: #262830;
+  --color-border: var(--line);
+  --color-border-subtle: var(--line-2);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--muted);
+  --color-ink-faint: #5E626E;
+  --color-ink-inverse: #0A0A0A;
+  --color-accent: var(--red);
+  --color-neon: var(--neon);
+  --color-focus: var(--red);
+}
