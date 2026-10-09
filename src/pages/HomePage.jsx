@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FEATURED_PROJECTS, PROFILE } from '../data/portfolioData';
+import { PROFILE } from '../data/portfolioData';
+import { useProjects } from '../hooks/useProjects';
 import WildHeroSection from '../components/sections/WildHeroSection';
 
 export default function HomePage() {
+  const { projects } = useProjects();
   const [activeFilter, setActiveFilter] = useState('ALL');
   const [copiedEmail, setCopiedEmail] = useState(false);
 
   const categories = ['ALL', 'SYSTEMS & UI', 'MOTION & FILM'];
 
-  const filteredProjects = FEATURED_PROJECTS.filter((project) => {
+  const filteredProjects = projects.filter((project) => {
     if (activeFilter === 'ALL') return true;
     if (activeFilter === 'SYSTEMS & UI') {
       return (
@@ -27,6 +29,11 @@ export default function HomePage() {
     }
     return true;
   });
+
+  const flagship = filteredProjects.find((p) => p.featured) || filteredProjects[0];
+  const supportingProjects = flagship 
+    ? filteredProjects.filter((p) => p.id !== flagship.id) 
+    : filteredProjects;
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(PROFILE.email);
@@ -70,7 +77,7 @@ export default function HomePage() {
                       : 'bg-white border border-[rgba(10,10,10,0.15)] !text-[#434b5c] hover:border-[#0A0A0A] hover:text-[#0A0A0A]'
                   }`}
                 >
-                  {cat} {cat === 'ALL' ? `[${FEATURED_PROJECTS.length}]` : ''}
+                  {cat} {cat === 'ALL' ? `[${projects.length}]` : ''}
                 </button>
               ))}
             </div>
@@ -79,84 +86,77 @@ export default function HomePage() {
           {/* Structured Projects Showcase */}
           <div className="space-y-12">
             
-            {/* Flagship Featured Project (Lumen OS) */}
-            {filteredProjects.find((p) => p.id === 'lumen-os') && (
-              (() => {
-                const flagship = filteredProjects.find((p) => p.id === 'lumen-os');
-                return (
-                  <article className="group bg-white border-2 border-[rgba(10,10,10,0.12)] hover:border-[#0A0A0A] rounded-2xl p-6 sm:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_36px_rgba(0,0,0,0.07)] transition-all duration-300">
-                    <Link to={`/project/${flagship.id}`} className="block outline-none">
-                      <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8 sm:gap-12 items-center">
-                        
-                        {/* Media Container */}
-                        <div className="relative w-full aspect-[16/10] bg-[#111318] rounded-xl overflow-hidden border border-[rgba(10,10,10,0.1)]">
-                          <img 
-                            src={flagship.heroImage || flagship.thumbnail} 
-                            alt={flagship.title}
-                            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" 
-                          />
-                          <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-white/95 backdrop-blur-md rounded border border-[rgba(10,10,10,0.15)] font-mono text-[10px] tracking-widest uppercase font-bold text-[#0A0A0A]">
-                            FLAGSHIP DIRECTION // {flagship.year}
-                          </div>
-                        </div>
-
-                        {/* Details */}
-                        <div>
-                          <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-wider text-[#e0492a] font-bold mb-2">
-                            <span>{flagship.category}</span>
-                            <span className="text-[#8b8b8b]">&bull;</span>
-                            <span className="text-[#3b4252]">{flagship.role}</span>
-                          </div>
-
-                          <h3 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#0A0A0A] group-hover:text-[#e0492a] transition-colors uppercase mb-3">
-                            {flagship.title}
-                          </h3>
-
-                          <p className="text-base sm:text-lg text-[#252934] leading-relaxed max-w-xl font-normal mb-6">
-                            {flagship.summary || flagship.subtitle}
-                          </p>
-
-                          {/* Metrics Bar */}
-                          {flagship.metrics && (
-                            <div className="grid grid-cols-3 gap-3 mb-6 p-4 bg-[#f6f7f9] border border-[rgba(10,10,10,0.08)] rounded-xl font-mono">
-                              {flagship.metrics.map((m) => (
-                                <div key={m.label}>
-                                  <span className="block text-lg font-bold text-[#0A0A0A]">{m.value}</span>
-                                  <span className="block text-[10px] text-[#5e6677] uppercase tracking-wider">{m.label}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* Stack & Button */}
-                          <div className="flex flex-wrap items-center justify-between gap-4">
-                            <div className="flex flex-wrap gap-1.5">
-                              {flagship.tags.slice(0, 3).map((tag) => (
-                                <span key={tag} className="px-2.5 py-1 bg-[#edf0f5] text-[#1c2230] rounded font-mono text-xs font-semibold">
-                                  #{tag}
-                                </span>
-                              ))}
-                            </div>
-
-                            <span className="inline-flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#0A0A0A] group-hover:text-[#e0492a]">
-                              <span>READ CASE STUDY</span>
-                              <span>&rarr;</span>
-                            </span>
-                          </div>
-
-                        </div>
+            {/* Flagship Featured Project */}
+            {flagship && (
+              <article className="group bg-white border-2 border-[rgba(10,10,10,0.12)] hover:border-[#0A0A0A] rounded-2xl p-6 sm:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_36px_rgba(0,0,0,0.07)] transition-all duration-300">
+                <Link to={`/project/${flagship.id}`} className="block outline-none">
+                  <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8 sm:gap-12 items-center">
+                    
+                    {/* Media Container */}
+                    <div className="relative w-full aspect-[16/10] bg-[#111318] rounded-xl overflow-hidden border border-[rgba(10,10,10,0.1)]">
+                      <img 
+                        src={flagship.heroImage || flagship.thumbnail} 
+                        alt={flagship.title}
+                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" 
+                      />
+                      <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-white/95 backdrop-blur-md rounded border border-[rgba(10,10,10,0.15)] font-mono text-[10px] tracking-widest uppercase font-bold text-[#0A0A0A]">
+                        FLAGSHIP DIRECTION // {flagship.year}
                       </div>
-                    </Link>
-                  </article>
-                );
-              })()
+                    </div>
+
+                    {/* Details */}
+                    <div>
+                      <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-wider text-[#e0492a] font-bold mb-2">
+                        <span>{flagship.category}</span>
+                        <span className="text-[#8b8b8b]">&bull;</span>
+                        <span className="text-[#3b4252]">{flagship.role}</span>
+                      </div>
+
+                      <h3 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#0A0A0A] group-hover:text-[#e0492a] transition-colors uppercase mb-3">
+                        {flagship.title}
+                      </h3>
+
+                      <p className="text-base sm:text-lg text-[#252934] leading-relaxed max-w-xl font-normal mb-6">
+                        {flagship.summary || flagship.subtitle}
+                      </p>
+
+                      {/* Metrics Bar */}
+                      {flagship.metrics && flagship.metrics.length > 0 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6 p-4 bg-[#f6f7f9] border border-[rgba(10,10,10,0.08)] rounded-xl font-mono">
+                          {flagship.metrics.map((m) => (
+                            <div key={m.label}>
+                              <span className="block text-lg font-bold text-[#0A0A0A]">{m.value}</span>
+                              <span className="block text-[10px] text-[#5e6677] uppercase tracking-wider">{m.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Stack & Button */}
+                      <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex flex-wrap gap-1.5">
+                          {flagship.tags?.slice(0, 3).map((tag) => (
+                            <span key={tag} className="px-2.5 py-1 bg-[#edf0f5] text-[#1c2230] rounded font-mono text-xs font-semibold">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+
+                        <span className="inline-flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-[#0A0A0A] group-hover:text-[#e0492a]">
+                          <span>READ CASE STUDY</span>
+                          <span>&rarr;</span>
+                        </span>
+                      </div>
+
+                    </div>
+                  </div>
+                </Link>
+              </article>
             )}
 
             {/* Supporting Projects (3-Column Responsive Grid) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredProjects
-                .filter((p) => p.id !== 'lumen-os' || activeFilter !== 'ALL')
-                .map((project, idx) => (
+              {supportingProjects.map((project, idx) => (
                   <article 
                     key={project.id}
                     className="group bg-white border border-[rgba(10,10,10,0.14)] hover:border-[#0A0A0A] rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between"

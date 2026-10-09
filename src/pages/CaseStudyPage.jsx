@@ -1,16 +1,17 @@
 import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FEATURED_PROJECTS } from '../data/portfolioData';
+import { useProjects } from '../hooks/useProjects';
 
 export default function CaseStudyPage() {
   const { id } = useParams();
+  const { projects } = useProjects();
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
 
-  const currentIndex = FEATURED_PROJECTS.findIndex((p) => p.id === id);
-  const project = FEATURED_PROJECTS[currentIndex];
+  const currentIndex = projects.findIndex((p) => p.id === id || p.slug === id);
+  const project = projects[currentIndex];
 
   if (!project) {
     return (
@@ -27,8 +28,8 @@ export default function CaseStudyPage() {
     );
   }
 
-  const prevProject = currentIndex > 0 ? FEATURED_PROJECTS[currentIndex - 1] : FEATURED_PROJECTS[FEATURED_PROJECTS.length - 1];
-  const nextProject = currentIndex < FEATURED_PROJECTS.length - 1 ? FEATURED_PROJECTS[currentIndex + 1] : FEATURED_PROJECTS[0];
+  const prevProject = currentIndex > 0 ? projects[currentIndex - 1] : projects[projects.length - 1];
+  const nextProject = currentIndex < projects.length - 1 ? projects[currentIndex + 1] : projects[0];
 
   return (
     <div className="w-full bg-[#fbfbfa] text-[#0A0A0A] min-h-screen">
