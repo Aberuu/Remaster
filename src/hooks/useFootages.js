@@ -37,6 +37,8 @@ function mapDatabaseFootages(data) {
       duration: item.duration || local?.duration || '00:30',
       aspect: item.aspect || local?.aspect || '16/9',
       description: item.description || local?.description || '',
+      thumbnail: item.thumbnail_url || local?.thumbnail || null,
+      thumbnail_url: item.thumbnail_url || local?.thumbnail || null,
       displayOrder: item.display_order ?? idx + 1,
       published: item.published !== false,
     };

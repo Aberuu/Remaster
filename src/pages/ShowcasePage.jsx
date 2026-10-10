@@ -193,6 +193,7 @@ export default function ShowcasePage() {
                           if (el) videoRefs.current[item.id] = el;
                         }}
                         src={item.video}
+                        poster={item.thumbnail_url || item.thumbnail}
                         muted={!isUnmuted}
                         loop
                         playsInline

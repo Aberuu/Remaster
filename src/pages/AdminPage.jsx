@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   isSupabaseConfigured, 
@@ -68,9 +68,14 @@ export default function AdminPage() {
     has_audio: true,
     description: '',
     video_url: '',
+    thumbnail_url: '',
     published: true,
   });
   const [uploadingFootageMedia, setUploadingFootageMedia] = useState(false);
+  const modalVideoRef = useRef(null);
+  const [videoScrubTime, setVideoScrubTime] = useState(0);
+  const [videoDuration, setVideoDuration] = useState(0);
+  const [capturingThumbnail, setCapturingThumbnail] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -498,6 +503,8 @@ export default function AdminPage() {
   };
 
   const openFootageModal = (item = null) => {
+    setVideoScrubTime(0);
+    setVideoDuration(0);
     if (item) {
       setEditingFootage(item);
       setFootageFormData({
@@ -511,6 +518,7 @@ export default function AdminPage() {
         has_audio: item.has_audio ?? item.hasAudio ?? true,
         description: item.description || '',
         video_url: item.video_url || item.video || '',
+        thumbnail_url: item.thumbnail_url || item.thumbnail || '',
         published: item.published !== false,
       });
     } else {
@@ -526,10 +534,61 @@ export default function AdminPage() {
         has_audio: true,
         description: '',
         video_url: '',
+        thumbnail_url: '',
         published: true,
       });
     }
     setActiveFootageModal(true);
+  };
+
+  const handleSeekVideo = (newTime) => {
+    const clamped = Math.max(0, Math.min(newTime, videoDuration || 600));
+    setVideoScrubTime(clamped);
+    if (modalVideoRef.current) {
+      modalVideoRef.current.currentTime = clamped;
+    }
+  };
+
+  const handleCaptureFrame = async () => {
+    const video = modalVideoRef.current;
+    if (!video) {
+      alert('Video belum dimuat.');
+      return;
+    }
+
+    try {
+      setCapturingThumbnail(true);
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          alert('Gagal mengambil frame dari video.');
+          setCapturingThumbnail(false);
+          return;
+        }
+
+        try {
+          const file = new File([blob], `thumb-frame-${Date.now()}.webp`, { type: 'image/webp' });
+          const publicUrl = await uploadPortfolioMedia(file);
+          setFootageFormData((prev) => ({ ...prev, thumbnail_url: publicUrl }));
+          showToast(`Frame pada detik ${video.currentTime.toFixed(1)}s berhasil dijadikan thumbnail!`);
+        } catch (uploadErr) {
+          console.warn('Upload frame ke storage gagal, menggunakan data URL:', uploadErr);
+          const dataUrl = canvas.toDataURL('image/webp', 0.85);
+          setFootageFormData((prev) => ({ ...prev, thumbnail_url: dataUrl }));
+          showToast(`Frame pada detik ${video.currentTime.toFixed(1)}s disetel sebagai thumbnail.`);
+        } finally {
+          setCapturingThumbnail(false);
+        }
+      }, 'image/webp', 0.85);
+    } catch (err) {
+      alert(`Gagal mengambil frame: ${err.message}`);
+      setCapturingThumbnail(false);
+    }
   };
 
   const handleSaveFootage = async (e) => {
@@ -556,6 +615,7 @@ export default function AdminPage() {
         has_audio: Boolean(footageFormData.has_audio),
         description: footageFormData.description.trim(),
         video_url: footageFormData.video_url.trim(),
+        thumbnail_url: footageFormData.thumbnail_url ? footageFormData.thumbnail_url.trim() : null,
         published: Boolean(footageFormData.published),
       };
 
@@ -1049,6 +1109,7 @@ export default function AdminPage() {
                           <div className="relative w-full aspect-[16/10] bg-[#111318] rounded-lg overflow-hidden border border-[rgba(10,10,10,0.1)] mb-4">
                             <video
                               src={item.video_url || item.video}
+                              poster={item.thumbnail_url || item.thumbnail}
                               muted
                               playsInline
                               preload="metadata"
@@ -1490,14 +1551,123 @@ export default function AdminPage() {
                 </span>
                 
                 {footageFormData.video_url ? (
-                  <div className="relative w-full aspect-[16/9] max-w-sm mx-auto rounded overflow-hidden border border-[#0A0A0A] bg-black mb-3">
-                    <video
-                      src={footageFormData.video_url}
-                      controls
-                      playsInline
-                      preload="metadata"
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="mb-4">
+                    <div className="relative w-full aspect-[16/9] max-w-md mx-auto rounded-lg overflow-hidden border border-[#0A0A0A] bg-black">
+                      <video
+                        ref={modalVideoRef}
+                        src={footageFormData.video_url}
+                        controls
+                        playsInline
+                        preload="auto"
+                        crossOrigin="anonymous"
+                        onLoadedMetadata={(e) => setVideoDuration(e.target.duration || 0)}
+                        onTimeUpdate={(e) => setVideoScrubTime(e.target.currentTime)}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+
+                    {/* Frame Scrubber & Thumbnail Studio */}
+                    <div className="mt-3 p-3.5 bg-white border border-[rgba(10,10,10,0.14)] rounded-xl text-left max-w-md mx-auto shadow-sm">
+                      <div className="flex items-center justify-between mb-2 font-mono text-[10px]">
+                        <span className="font-bold text-[#0A0A0A] uppercase flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#e0492a] animate-pulse"></span>
+                          <span>DETIK: {videoScrubTime.toFixed(1)}s / {videoDuration.toFixed(1)}s</span>
+                        </span>
+                        
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleSeekVideo(videoScrubTime - 1)}
+                            className="px-1.5 py-0.5 bg-[#f0f2f5] hover:bg-[#0A0A0A] hover:text-white rounded font-mono font-bold transition-colors"
+                            title="Mundur 1 detik"
+                          >
+                            -1s
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSeekVideo(videoScrubTime - 0.1)}
+                            className="px-1.5 py-0.5 bg-[#f0f2f5] hover:bg-[#0A0A0A] hover:text-white rounded font-mono font-bold transition-colors"
+                            title="Mundur 0.1 detik"
+                          >
+                            -0.1s
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSeekVideo(videoScrubTime + 0.1)}
+                            className="px-1.5 py-0.5 bg-[#f0f2f5] hover:bg-[#0A0A0A] hover:text-white rounded font-mono font-bold transition-colors"
+                            title="Maju 0.1 detik"
+                          >
+                            +0.1s
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSeekVideo(videoScrubTime + 1)}
+                            className="px-1.5 py-0.5 bg-[#f0f2f5] hover:bg-[#0A0A0A] hover:text-white rounded font-mono font-bold transition-colors"
+                            title="Maju 1 detik"
+                          >
+                            +1s
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Timeline Slider */}
+                      <input
+                        type="range"
+                        min="0"
+                        max={videoDuration || 30}
+                        step="0.1"
+                        value={videoScrubTime}
+                        onChange={(e) => handleSeekVideo(parseFloat(e.target.value))}
+                        className="w-full accent-[#0A0A0A] cursor-pointer h-2 bg-[#e4e7ec] rounded-lg"
+                      />
+
+                      {/* Capture Frame Button */}
+                      <div className="mt-2.5 flex items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={handleCaptureFrame}
+                          disabled={capturingThumbnail}
+                          className="min-h-[36px] px-3.5 py-1.5 bg-[#0A0A0A] hover:bg-[#e0492a] disabled:opacity-50 text-white rounded font-mono text-[11px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5"
+                        >
+                          <span>📸 AMBIL FRAME DETIK {videoScrubTime.toFixed(1)}s</span>
+                        </button>
+                        {capturingThumbnail && (
+                          <span className="text-[10px] text-[#e0492a] font-bold animate-pulse">
+                            MEMPROSES THUMBNAIL...
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Active Thumbnail Preview */}
+                {footageFormData.thumbnail_url ? (
+                  <div className="mb-4 p-3 bg-white border-2 border-[#0A0A0A] rounded-xl flex items-center justify-between gap-4 text-left max-w-md mx-auto">
+                    <div className="flex items-center gap-3">
+                      <div className="relative w-20 aspect-[16/10] bg-[#111318] rounded overflow-hidden border border-[#0A0A0A]">
+                        <img
+                          src={footageFormData.thumbnail_url}
+                          alt="Thumbnail poster preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <span className="block font-mono text-[10px] font-bold text-[#e0492a] uppercase">
+                          THUMBNAIL POSTER AKTIF
+                        </span>
+                        <span className="text-[11px] text-[#555d70] line-clamp-1 max-w-[200px] font-sans">
+                          {footageFormData.thumbnail_url.startsWith('data:') ? 'Tangkapan Frame Canvas' : footageFormData.thumbnail_url}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFootageFormData((prev) => ({ ...prev, thumbnail_url: '' }))}
+                      className="text-xs text-red-600 hover:underline font-mono font-bold uppercase p-1"
+                    >
+                      [HAPUS]
+                    </button>
                   </div>
                 ) : null}
 
@@ -1522,6 +1692,19 @@ export default function AdminPage() {
                     value={footageFormData.video_url}
                     onChange={(e) => setFootageFormData((prev) => ({ ...prev, video_url: e.target.value }))}
                     className="w-full px-3 py-2 bg-white border border-[rgba(10,10,10,0.15)] rounded text-xs font-sans"
+                  />
+                </div>
+
+                <div className="mt-2 text-left">
+                  <label className="block text-[10px] font-bold text-[#6a7285] uppercase mb-1">
+                    URL POSTER THUMBNAIL (OPSIONAL / OTOMATIS TERISI SAAT AMBIL FRAME)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://... atau klik Ambil Frame di atas"
+                    value={footageFormData.thumbnail_url}
+                    onChange={(e) => setFootageFormData((prev) => ({ ...prev, thumbnail_url: e.target.value }))}
+                    className="w-full px-3 py-1.5 bg-white border border-[rgba(10,10,10,0.15)] rounded text-[11px] font-sans"
                   />
                 </div>
               </div>

@@ -65,8 +65,17 @@ export default function FootageShowcaseSection() {
 
   const playGridVideos = useCallback(() => {
     Object.values(videoRefs.current).forEach((vid) => {
-      if (vid && vid.paused) {
-        vid.play().catch(() => {});
+      if (vid) {
+        vid.defaultMuted = true;
+        vid.muted = true;
+        if (vid.paused) {
+          const playPromise = vid.play();
+          if (playPromise !== undefined) {
+            playPromise.catch((err) => {
+              console.warn('Autoplay prevented by browser:', err);
+            });
+          }
+        }
       }
     });
     startAutoplayTimer();
@@ -81,7 +90,7 @@ export default function FootageShowcaseSection() {
       ([entry]) => {
         setInView(entry.isIntersecting);
       },
-      { threshold: 0.2 }
+      { threshold: 0.1 }
     );
 
     observer.observe(el);
@@ -104,7 +113,7 @@ export default function FootageShowcaseSection() {
     }
 
     return () => clearInterval(intervalRef.current);
-  }, [inView, modalVideo, playGridVideos, pauseGridVideos]);
+  }, [inView, footages, modalVideo, playGridVideos, pauseGridVideos]);
 
   // ─── 3. Card Playback Interactions ───
   // Inline toggle play on card click (desktop or mobile)
@@ -268,10 +277,21 @@ export default function FootageShowcaseSection() {
                     <div className="relative w-full aspect-[16/10] bg-[#111318] rounded-xl overflow-hidden border border-white/20 mb-6 shadow-inner">
                       <video
                         src={item.video}
+                        poster={item.thumbnail_url || item.thumbnail}
+                        autoPlay
                         muted
                         loop
                         playsInline
-                        preload="metadata"
+                        preload="auto"
+                        ref={(el) => {
+                          if (el) {
+                            el.defaultMuted = true;
+                            el.muted = true;
+                            if (el.paused && inView) {
+                              el.play().catch(() => {});
+                            }
+                          }
+                        }}
                         className="w-full h-full object-cover opacity-60 transition-transform duration-700 ease-out group-hover:scale-105"
                       />
 
@@ -347,13 +367,19 @@ export default function FootageShowcaseSection() {
                 >
                   <video
                     ref={(el) => {
-                      if (el) videoRefs.current[item.id] = el;
+                      if (el) {
+                        videoRefs.current[item.id] = el;
+                        el.defaultMuted = true;
+                        el.muted = !isUnmuted;
+                      }
                     }}
                     src={item.video}
+                    poster={item.thumbnail_url || item.thumbnail}
+                    autoPlay
                     muted={!isUnmuted}
                     loop
                     playsInline
-                    preload="metadata"
+                    preload="auto"
                     onPlay={() => setPlayingMap((prev) => ({ ...prev, [item.id]: true }))}
                     onPause={() => setPlayingMap((prev) => ({ ...prev, [item.id]: false }))}
                     className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
