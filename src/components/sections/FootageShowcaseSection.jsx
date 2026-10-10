@@ -13,6 +13,7 @@ export default function FootageShowcaseSection() {
   const [cycleCompleted, setCycleCompleted] = useState(false);
   const [activeHoverId, setActiveHoverId] = useState(null);
   const [unmutedId, setUnmutedId] = useState(null);
+  const [playingMap, setPlayingMap] = useState({});
 
   // Cinema modal state
   const [modalVideo, setModalVideo] = useState(null);
@@ -21,6 +22,52 @@ export default function FootageShowcaseSection() {
   const hasStartedRef = useRef(false);
   const cycleDoneRef = useRef(false);
   const intervalRef = useRef(null);
+  const inViewRef = useRef(false);
+
+  // Keep inViewRef updated for callbacks
+  useEffect(() => {
+    inViewRef.current = inView;
+  }, [inView]);
+
+  // ─── Timer Helper Functions ───
+  const startAutoplayTimer = useCallback(() => {
+    clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      setElapsedSeconds((prev) => {
+        const next = prev + 1;
+        if (next >= AUTOPLAY_CYCLE_SECONDS) {
+          clearInterval(intervalRef.current);
+          cycleDoneRef.current = true;
+          setCycleCompleted(true);
+
+          // Pause all videos at cycle completion
+          Object.values(videoRefs.current).forEach((vid) => {
+            if (vid) vid.pause();
+          });
+          return AUTOPLAY_CYCLE_SECONDS;
+        }
+        return next;
+      });
+    }, 1000);
+  }, []);
+
+  const pauseGridVideos = useCallback(() => {
+    clearInterval(intervalRef.current);
+    Object.values(videoRefs.current).forEach((vid) => {
+      if (vid && !vid.paused) {
+        vid.pause();
+      }
+    });
+  }, []);
+
+  const playGridVideos = useCallback(() => {
+    Object.values(videoRefs.current).forEach((vid) => {
+      if (vid && vid.paused) {
+        vid.play().catch(() => {});
+      }
+    });
+    startAutoplayTimer();
+  }, [startAutoplayTimer]);
 
   // ─── 1. Intersection Observer (Scroll-Aware) ───
   useEffect(() => {
@@ -40,59 +87,42 @@ export default function FootageShowcaseSection() {
 
   // ─── 2. Smart 30-Second Autoplay Cycle ───
   useEffect(() => {
-    // If cycle is done, handle hover playback only
-    if (cycleDoneRef.current) return;
+    // If cycle is done or modal is open, do not trigger background autoplay
+    if (cycleDoneRef.current || modalVideo) return;
 
     if (inView) {
       hasStartedRef.current = true;
-
-      // Play all videos in muted mode
-      Object.values(videoRefs.current).forEach((vid) => {
-        if (vid && vid.paused) {
-          vid.play().catch(() => {});
-        }
-      });
-
-      // Start elapsed timer (updates once every second for crisp monitor UI)
-      clearInterval(intervalRef.current);
-      intervalRef.current = setInterval(() => {
-        setElapsedSeconds((prev) => {
-          const next = prev + 1;
-          if (next >= AUTOPLAY_CYCLE_SECONDS) {
-            clearInterval(intervalRef.current);
-            cycleDoneRef.current = true;
-            setCycleCompleted(true);
-
-            // Pause all videos at cycle completion
-            Object.values(videoRefs.current).forEach((vid) => {
-              if (vid) vid.pause();
-            });
-            return AUTOPLAY_CYCLE_SECONDS;
-          }
-          return next;
-        });
-      }, 1000);
+      playGridVideos();
     } else {
       // User scrolled out of view: pause to save CPU and battery
-      clearInterval(intervalRef.current);
       if (hasStartedRef.current && !cycleDoneRef.current) {
-        Object.values(videoRefs.current).forEach((vid) => {
-          if (vid && !vid.paused) {
-            vid.pause();
-          }
-        });
+        pauseGridVideos();
       }
     }
 
     return () => clearInterval(intervalRef.current);
-  }, [inView]);
+  }, [inView, modalVideo, playGridVideos, pauseGridVideos]);
 
-  // ─── 3. Hover / Replay Handling After 30s ───
+  // ─── 3. Card Playback Interactions ───
+  // Inline toggle play on card click (desktop or mobile)
+  const handleToggleCardPlay = (id) => {
+    const vid = videoRefs.current[id];
+    if (!vid) return;
+
+    if (vid.paused) {
+      vid.play().catch(() => {});
+      setActiveHoverId(id);
+    } else {
+      vid.pause();
+    }
+  };
+
+  // Hover to play after 30s cycle
   const handleCardMouseEnter = (id) => {
     setActiveHoverId(id);
-    if (cycleCompleted) {
+    if (cycleDoneRef.current && !modalVideo) {
       const vid = videoRefs.current[id];
-      if (vid) {
+      if (vid && vid.paused) {
         vid.play().catch(() => {});
       }
     }
@@ -100,9 +130,9 @@ export default function FootageShowcaseSection() {
 
   const handleCardMouseLeave = (id) => {
     setActiveHoverId((prev) => (prev === id ? null : prev));
-    if (cycleCompleted) {
+    if (cycleDoneRef.current && !modalVideo) {
       const vid = videoRefs.current[id];
-      if (vid) {
+      if (vid && !vid.paused) {
         vid.pause();
       }
     }
@@ -124,16 +154,19 @@ export default function FootageShowcaseSection() {
 
   // ─── 5. Cinema Modal Handler ───
   const openModal = (item) => {
-    // Pause background grid while modal is open
-    Object.values(videoRefs.current).forEach((vid) => {
-      if (vid) vid.pause();
-    });
+    // Pause background grid and timer while modal is open
+    pauseGridVideos();
     setModalVideo(item);
   };
 
   const closeModal = useCallback(() => {
     setModalVideo(null);
-  }, []);
+
+    // If 30s cycle is still running and section is in view, resume background autoplay!
+    if (!cycleDoneRef.current && inViewRef.current) {
+      playGridVideos();
+    }
+  }, [playGridVideos]);
 
   // Keyboard accessibility: ESC closes modal
   useEffect(() => {
@@ -196,6 +229,7 @@ export default function FootageShowcaseSection() {
         {MOTION_FOOTAGES.map((item, idx) => {
           const isHovered = activeHoverId === item.id;
           const isUnmuted = unmutedId === item.id;
+          const isPlaying = !!playingMap[item.id];
 
           return (
             <article 
@@ -220,7 +254,8 @@ export default function FootageShowcaseSection() {
                 {/* Video Container Frame */}
                 <div 
                   className="relative w-full aspect-[16/10] bg-[#101217] rounded-xl overflow-hidden border border-[rgba(10,10,10,0.14)] mb-6 shadow-inner cursor-pointer"
-                  onClick={() => openModal(item)}
+                  onClick={() => handleToggleCardPlay(item.id)}
+                  title="Click to toggle playback"
                 >
                   <video
                     ref={(el) => {
@@ -231,24 +266,20 @@ export default function FootageShowcaseSection() {
                     loop
                     playsInline
                     preload="metadata"
+                    onPlay={() => setPlayingMap((prev) => ({ ...prev, [item.id]: true }))}
+                    onPause={() => setPlayingMap((prev) => ({ ...prev, [item.id]: false }))}
                     className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
                   />
 
                   {/* Top Left Status Badge */}
                   <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
                     <div className="px-2.5 py-1 bg-black/80 backdrop-blur-md rounded border border-white/20 font-mono text-[10px] tracking-widest uppercase font-bold text-white flex items-center gap-1.5">
-                      <span className={`w-1.5 h-1.5 rounded-full ${!cycleCompleted || isHovered ? 'bg-[#e0492a] animate-ping' : 'bg-white/40'}`} />
+                      <span className={`w-1.5 h-1.5 rounded-full ${isPlaying ? 'bg-[#e0492a] animate-ping' : 'bg-white/40'}`} />
                       <span>
-                        {!cycleCompleted 
-                          ? 'AUTOPLAY' 
-                          : isHovered 
-                            ? 'PLAYING' 
-                            : 'STANDBY'}
+                        {isPlaying
+                          ? (!cycleCompleted ? 'AUTOPLAY' : 'PLAYING') 
+                          : 'STANDBY'}
                       </span>
-                    </div>
-
-                    <div className="px-2 py-1 bg-black/70 backdrop-blur-md rounded border border-white/10 font-mono text-[10px] tracking-wider text-white/80">
-                      {item.duration}
                     </div>
                   </div>
 
@@ -284,11 +315,11 @@ export default function FootageShowcaseSection() {
                     </button>
                   </div>
 
-                  {/* Replay Overlay Hint when cycle finished and not hovered (Desktop Only) */}
-                  {cycleCompleted && !isHovered && (
+                  {/* Replay Overlay Hint when cycle finished and video is paused (Desktop Only) */}
+                  {cycleCompleted && !isPlaying && !isHovered && (
                     <div className="absolute inset-0 bg-black/25 backdrop-blur-[1px] hidden sm:flex items-center justify-center pointer-events-none transition-opacity">
                       <div className="px-3 py-1.5 bg-black/85 border border-white/30 rounded-md font-mono text-[11px] font-bold uppercase tracking-wider text-white">
-                        HOVER TO REPLAY
+                        HOVER / CLICK TO PLAY
                       </div>
                     </div>
                   )}
