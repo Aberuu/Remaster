@@ -105,15 +105,14 @@ export async function createProject(project) {
 }
 
 /**
- * Update an existing project
+ * Upsert a project by slug
  */
-export async function updateProject(id, updates) {
+export async function upsertProject(project) {
   if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured');
 
   const { data, error } = await supabase
     .from('projects')
-    .update({ ...updates, updated_at: new Date().toISOString() })
-    .eq('id', id)
+    .upsert([project], { onConflict: 'slug' })
     .select()
     .single();
 
@@ -122,15 +121,33 @@ export async function updateProject(id, updates) {
 }
 
 /**
- * Delete a project
+ * Update an existing project
  */
-export async function deleteProject(id) {
+export async function updateProject(idOrSlug, updates) {
   if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured');
 
-  const { error } = await supabase
+  const query = supabase
     .from('projects')
-    .delete()
-    .eq('id', id);
+    .update({ ...updates, updated_at: new Date().toISOString() });
+
+  const { data, error } = isValidUUID(idOrSlug)
+    ? await query.eq('id', idOrSlug).select().single()
+    : await query.eq('slug', idOrSlug).select().single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Delete a project
+ */
+export async function deleteProject(idOrSlug) {
+  if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured');
+
+  const query = supabase.from('projects').delete();
+  const { error } = isValidUUID(idOrSlug)
+    ? await query.eq('id', idOrSlug)
+    : await query.eq('slug', idOrSlug);
 
   if (error) throw error;
   return true;

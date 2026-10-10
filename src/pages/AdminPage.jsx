@@ -4,9 +4,9 @@ import {
   isSupabaseConfigured, 
   supabase, 
   fetchAdminProjects, 
-  createProject, 
   updateProject, 
   deleteProject, 
+  upsertProject,
   fetchAdminFootages,
   updateFootage,
   deleteFootage,
@@ -21,7 +21,7 @@ import {
 } from '../lib/supabase';
 import SwissLogo from '../components/ui/SwissLogo';
 import { getLocalProject } from '../hooks/useProjects';
-import { MOTION_FOOTAGES } from '../data/portfolioData';
+import { FEATURED_PROJECTS, MOTION_FOOTAGES } from '../data/portfolioData';
 
 function sanitizeSlug(str) {
   if (!str) return '';
@@ -119,19 +119,39 @@ export default function AdminPage() {
     checkAuth();
   }, []);
 
+  const mergeProjectsWithFallback = useCallback((dbProjects) => {
+    if (!dbProjects || !Array.isArray(dbProjects)) return [];
+    const existingSlugs = new Set(dbProjects.map((p) => (p.slug || '').toLowerCase()));
+    const missingLocals = FEATURED_PROJECTS.filter(
+      (fp) => !existingSlugs.has(fp.id.toLowerCase()) && 
+              !existingSlugs.has((fp.slug || '').toLowerCase()) &&
+              !(fp.id === 'cadence-audio' && existingSlugs.has('cadence')) &&
+              !(fp.id === 'sed-8' && (existingSlugs.has('lumen-os') || existingSlugs.has('sed#8'))) &&
+              !(fp.id === 'Skyrace' && (existingSlugs.has('quiet-mornings') || existingSlugs.has('merbabu-skyrace')))
+    ).map((fp, i) => ({
+      ...fp,
+      slug: fp.slug || fp.id,
+      display_order: dbProjects.length + i + 1,
+      published: true,
+      thumbnail_url: typeof fp.thumbnail === 'string' ? fp.thumbnail : '',
+      isLocalDraft: true,
+    }));
+    return [...dbProjects, ...missingLocals];
+  }, []);
+
   // Fetch admin projects when authenticated
   const loadProjects = useCallback(async () => {
     if (!adminUser) return;
     try {
       setProjectsLoading(true);
       const data = await fetchAdminProjects();
-      setProjects(data);
+      setProjects(mergeProjectsWithFallback(data));
     } catch (err) {
       console.error('Failed to load admin projects:', err);
     } finally {
       setProjectsLoading(false);
     }
-  }, [adminUser]);
+  }, [adminUser, mergeProjectsWithFallback]);
 
   // Fetch admin footages when authenticated
   const loadFootages = useCallback(async () => {
@@ -185,7 +205,7 @@ export default function AdminPage() {
         if (!isMounted) return;
 
         if (projectsData) {
-          setProjects(projectsData);
+          setProjects(mergeProjectsWithFallback(projectsData));
         }
 
         if (footagesData && Array.isArray(footagesData) && footagesData.length > 0) {
@@ -212,7 +232,7 @@ export default function AdminPage() {
     return () => {
       isMounted = false;
     };
-  }, [adminUser]);
+  }, [adminUser, mergeProjectsWithFallback]);
 
   const showToast = useCallback((msg) => {
     setToastMessage(msg);
@@ -441,12 +461,12 @@ export default function AdminPage() {
 
     try {
       setIsSubmitting(true);
-      if (editingProject) {
+      if (editingProject && isValidUUID(editingProject.id)) {
         await updateProject(editingProject.id, payload);
         showToast('Commission updated successfully.');
       } else {
-        await createProject(payload);
-        showToast('New commission published to live portfolio!');
+        await upsertProject(payload);
+        showToast('Commission saved to database!');
       }
       setActiveModal(false);
       loadProjects();
@@ -462,7 +482,11 @@ export default function AdminPage() {
     if (!window.confirm(`Are you sure you want to delete commission "${title}"?`)) return;
 
     try {
-      await deleteProject(id);
+      if (isValidUUID(id)) {
+        await deleteProject(id);
+      } else if (typeof id === 'string') {
+        await deleteProject(id).catch(() => {});
+      }
       showToast('Commission deleted.');
       loadProjects();
     } catch (err) {
@@ -473,7 +497,8 @@ export default function AdminPage() {
   // Quick Toggle Published
   const handleTogglePublish = async (proj) => {
     try {
-      await updateProject(proj.id, { published: !proj.published });
+      const targetId = isValidUUID(proj.id) ? proj.id : (proj.slug || proj.id);
+      await updateProject(targetId, { published: !proj.published });
       showToast(proj.published ? 'Set to draft.' : 'Published live.');
       loadProjects();
     } catch (err) {

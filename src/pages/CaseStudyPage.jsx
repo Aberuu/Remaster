@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useProjects } from '../hooks/useProjects';
+import { useProjects, getLocalProject } from '../hooks/useProjects';
 
 export default function CaseStudyPage() {
   const { id } = useParams();
@@ -14,11 +14,13 @@ export default function CaseStudyPage() {
   const currentIndex = projects.findIndex(
     (p) => (p.id && p.id.toLowerCase() === targetId) || 
            (p.slug && p.slug.toLowerCase() === targetId) ||
+           (targetId === 'cadence' && (p.id?.toLowerCase() === 'cadence-audio' || p.slug?.toLowerCase() === 'cadence-audio')) ||
+           (targetId === 'cadence-audio' && (p.id?.toLowerCase() === 'cadence' || p.slug?.toLowerCase() === 'cadence')) ||
            (targetId === 'sed-8' && (p.id === 'sed#8' || p.id === 'lumes-os' || p.id === 'lumen-os')) ||
            (targetId === 'sed#8' && (p.id === 'sed-8' || p.id === 'lumes-os' || p.id === 'lumen-os')) ||
            (targetId === 'lumes-os' && (p.id === 'sed-8' || p.id === 'sed#8'))
   );
-  const project = projects[currentIndex];
+  const project = projects[currentIndex] || getLocalProject(targetId);
 
   if (!project) {
     return (

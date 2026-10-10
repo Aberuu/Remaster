@@ -16,14 +16,19 @@ FEATURED_PROJECTS.forEach((p) => {
     localMap.set('merbabu-skyrace', p);
     localMap.set('skyrace', p);
   }
+  if (p.id === 'cadence-audio') {
+    localMap.set('cadence', p);
+    localMap.set('cadence-audio', p);
+  }
 });
 
 export function getLocalProject(slug) {
-  return localMap.get(slug);
+  if (!slug) return null;
+  return localMap.get(slug) || localMap.get(String(slug).toLowerCase());
 }
 
 function mapDatabaseProjects(data) {
-  return data.map((item) => {
+  const dbProjects = data.map((item) => {
     const slug = item.slug || item.id;
     const local = localMap.get(slug);
 
@@ -64,6 +69,18 @@ function mapDatabaseProjects(data) {
       links: Array.isArray(item.links) && item.links.length > 0 ? item.links : (local?.links || []),
     };
   });
+
+  // Preserve any local projects that might not exist yet in Supabase (e.g. cadence-audio)
+  const existingSlugs = new Set(dbProjects.map((p) => (p.id || '').toLowerCase()));
+  const missingLocals = FEATURED_PROJECTS.filter(
+    (fp) => !existingSlugs.has(fp.id.toLowerCase()) && 
+            !existingSlugs.has((fp.slug || '').toLowerCase()) &&
+            !(fp.id === 'cadence-audio' && existingSlugs.has('cadence')) &&
+            !(fp.id === 'sed-8' && (existingSlugs.has('lumen-os') || existingSlugs.has('sed#8'))) &&
+            !(fp.id === 'Skyrace' && (existingSlugs.has('quiet-mornings') || existingSlugs.has('merbabu-skyrace')))
+  );
+
+  return [...dbProjects, ...missingLocals];
 }
 
 export function useProjects() {
