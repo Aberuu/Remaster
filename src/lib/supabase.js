@@ -137,6 +137,139 @@ export async function deleteProject(id) {
 }
 
 // ==============================================================================
+// Showcase Videos (Motion & Footage Archive) API
+// ==============================================================================
+
+/**
+ * Fetch all published showcase videos ordered by display_order
+ */
+export async function fetchLiveFootages() {
+  if (!isSupabaseConfigured || !supabase) return null;
+
+  try {
+    const { data, error } = await supabase
+      .from('showcase_videos')
+      .select('*')
+      .eq('published', true)
+      .order('display_order', { ascending: true });
+
+    if (error) {
+      console.warn('Supabase query error on showcase_videos, falling back to local:', error.message);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.warn('Supabase network error on showcase_videos:', err);
+    return null;
+  }
+}
+
+/**
+ * Fetch all showcase videos for admin (including drafts)
+ */
+export async function fetchAdminFootages() {
+  if (!isSupabaseConfigured || !supabase) return [];
+
+  const { data, error } = await supabase
+    .from('showcase_videos')
+    .select('*')
+    .order('display_order', { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
+export const isValidUUID = (str) =>
+  typeof str === 'string' &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
+/**
+ * Insert a new showcase video
+ */
+export async function createFootage(footage) {
+  if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured');
+
+  const { data, error } = await supabase
+    .from('showcase_videos')
+    .insert([footage])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Upsert a showcase video by slug
+ */
+export async function upsertFootage(footage) {
+  if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured');
+
+  const { data, error } = await supabase
+    .from('showcase_videos')
+    .upsert([footage], { onConflict: 'slug' })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Update a showcase video by UUID or slug
+ */
+export async function updateFootage(idOrSlug, updates) {
+  if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured');
+
+  const query = supabase
+    .from('showcase_videos')
+    .update({ ...updates, updated_at: new Date().toISOString() });
+
+  const { data, error } = isValidUUID(idOrSlug)
+    ? await query.eq('id', idOrSlug).select().single()
+    : await query.eq('slug', idOrSlug).select().single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Delete a showcase video by UUID or slug
+ */
+export async function deleteFootage(idOrSlug) {
+  if (!isSupabaseConfigured || !supabase) throw new Error('Supabase not configured');
+
+  const query = supabase.from('showcase_videos').delete();
+  const { error } = isValidUUID(idOrSlug)
+    ? await query.eq('id', idOrSlug)
+    : await query.eq('slug', idOrSlug);
+
+  if (error) throw error;
+  return true;
+}
+
+/**
+ * Update display order of multiple showcase videos
+ */
+export async function updateFootagesOrder(orderedItems) {
+  if (!isSupabaseConfigured || !supabase) return;
+
+  const validItems = orderedItems.filter((item) => isValidUUID(item.id) || Boolean(item.slug));
+  const updates = validItems.map((item, index) => {
+    const query = supabase
+      .from('showcase_videos')
+      .update({ display_order: index + 1, updated_at: new Date().toISOString() });
+
+    return isValidUUID(item.id)
+      ? query.eq('id', item.id)
+      : query.eq('slug', item.slug || item.id);
+  });
+
+  await Promise.all(updates);
+}
+
+// ==============================================================================
 // 15-Minute Strict Admin Session Management
 // ==============================================================================
 export const ADMIN_SESSION_DURATION_MS = 15 * 60 * 1000; // 15 minutes in milliseconds

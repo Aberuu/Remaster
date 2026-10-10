@@ -186,3 +186,60 @@ create policy "Authenticated admin media delete"
   on storage.objects for delete
   to authenticated
   using (bucket_id = 'portfolio-media');
+
+-- ==============================================================================
+-- 7. Showcase Videos Table (Motion & Footage Archive)
+-- ==============================================================================
+create table if not exists public.showcase_videos (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique,
+  title text not null,
+  subtitle text,
+  category text not null,
+  year text not null default '2026',
+  video_url text not null,
+  thumbnail_url text,
+  tag text not null default 'REEL',
+  has_audio boolean default true,
+  aspect text default '16/9',
+  description text,
+  display_order int default 0,
+  published boolean default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- Enable RLS
+alter table public.showcase_videos enable row level security;
+
+-- Policies: Public can read published showcase videos
+drop policy if exists "Public can view published showcase videos" on public.showcase_videos;
+create policy "Public can view published showcase videos"
+  on public.showcase_videos for select
+  using (published = true);
+
+-- Policies: Authenticated Admin can perform all CRUD actions
+drop policy if exists "Admin can view all showcase videos" on public.showcase_videos;
+create policy "Admin can view all showcase videos"
+  on public.showcase_videos for select
+  to authenticated
+  using (true);
+
+drop policy if exists "Admin can insert showcase videos" on public.showcase_videos;
+create policy "Admin can insert showcase videos"
+  on public.showcase_videos for insert
+  to authenticated
+  with check (true);
+
+drop policy if exists "Admin can update showcase videos" on public.showcase_videos;
+create policy "Admin can update showcase videos"
+  on public.showcase_videos for update
+  to authenticated
+  using (true);
+
+drop policy if exists "Admin can delete showcase videos" on public.showcase_videos;
+create policy "Admin can delete showcase videos"
+  on public.showcase_videos for delete
+  to authenticated
+  using (true);
+

@@ -1,9 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { MOTION_FOOTAGES } from '../../data/portfolioData';
+import { useNavigate } from 'react-router-dom';
+import { useFootages } from '../../hooks/useFootages';
 
 const AUTOPLAY_CYCLE_SECONDS = 30;
 
 export default function FootageShowcaseSection() {
+  const navigate = useNavigate();
+  const { footages } = useFootages();
   const sectionRef = useRef(null);
   const videoRefs = useRef({});
 
@@ -209,7 +212,7 @@ export default function FootageShowcaseSection() {
             </span>
           </div>
           <span className="text-[#5e6677] uppercase text-[11px] font-semibold">
-            04 MASTER REELS &bull; 1080P/4K
+            {String(footages.length).padStart(2, '0')} MASTER REELS &bull; 1080P/4K
           </span>
         </div>
       </div>
@@ -226,10 +229,95 @@ export default function FootageShowcaseSection() {
 
       {/* ─── 2x2 High-Contrast Brutalist Video Grid ─── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
-        {MOTION_FOOTAGES.map((item, idx) => {
+        {footages.slice(0, 4).map((item, idx) => {
           const isHovered = activeHoverId === item.id;
           const isUnmuted = unmutedId === item.id;
           const isPlaying = !!playingMap[item.id];
+          const isStackedDeck = idx === 3 && footages.length >= 4;
+
+          if (isStackedDeck) {
+            return (
+              <div 
+                key="stacked-deck-portal"
+                onClick={() => navigate('/showcase')}
+                className="relative group cursor-pointer"
+                title="Click to explore entire showcase gallery"
+              >
+                {/* Layer 3: Deepest stacked card */}
+                <div className="absolute inset-0 bg-[#e0492a]/15 rounded-2xl border-2 border-[#0A0A0A] translate-x-3.5 translate-y-3.5 rotate-2 transition-transform duration-300 ease-out group-hover:translate-x-5 group-hover:translate-y-5 group-hover:rotate-3 shadow-sm" />
+
+                {/* Layer 2: Middle stacked card */}
+                <div className="absolute inset-0 bg-white rounded-2xl border-2 border-[#0A0A0A] translate-x-1.5 translate-y-1.5 rotate-1 transition-transform duration-300 ease-out group-hover:translate-x-2.5 group-hover:translate-y-2.5 group-hover:rotate-1.5 shadow-sm" />
+
+                {/* Layer 1: Front card */}
+                <article className="relative bg-[#0A0A0A] text-white border-2 border-[#0A0A0A] rounded-2xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden shadow-md transition-transform duration-300 ease-out group-hover:-translate-y-1 h-full">
+                  <div>
+                    {/* Top Metadata */}
+                    <div className="flex items-center justify-between font-mono text-xs uppercase tracking-wider mb-4 pb-3 border-b border-white/20">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-[#e0492a]">REEL 04</span>
+                        <span className="text-white/40">&bull;</span>
+                        <span className="font-semibold text-white/90">{item.year}</span>
+                      </div>
+                      <span className="px-2 py-0.5 bg-[#e0492a] text-white rounded font-bold text-[10px] tracking-widest uppercase">
+                        VAULT DECK
+                      </span>
+                    </div>
+
+                    {/* Media Frame with Preview & Callout */}
+                    <div className="relative w-full aspect-[16/10] bg-[#111318] rounded-xl overflow-hidden border border-white/20 mb-6 shadow-inner">
+                      <video
+                        src={item.video}
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                        className="w-full h-full object-cover opacity-60 transition-transform duration-700 ease-out group-hover:scale-105"
+                      />
+
+                      {/* Center Callout Overlay */}
+                      <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex flex-col items-center justify-center p-4 text-center">
+                        <div className="px-3.5 py-2 bg-white text-[#0A0A0A] rounded-lg font-mono text-xs font-bold uppercase tracking-wider shadow-xl flex items-center gap-2 mb-2 group-hover:bg-[#e0492a] group-hover:text-white transition-colors">
+                          <span>EXPLORE GALLERY</span>
+                          <span>&rarr;</span>
+                        </div>
+                        <span className="font-mono text-[10px] uppercase tracking-widest text-white/90">
+                          +{Math.max(1, footages.length - 3)} MASTER CUTS INSIDE
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div>
+                      <div className="font-mono text-xs uppercase tracking-wider text-[#e0492a] font-bold mb-1.5">
+                        EXPANDED REEL VAULT
+                      </div>
+
+                      <h3 className="text-2xl font-bold tracking-tight text-white group-hover:text-[#e0492a] transition-colors uppercase mb-2">
+                        Directed Showcase Gallery
+                      </h3>
+
+                      <p className="text-sm text-white/70 leading-relaxed font-normal mb-4">
+                        Tap this stack to unpack the complete reel archive of commercial direction, aftermovies, and brand films.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Footer Bar */}
+                  <div className="pt-4 border-t border-white/15 flex items-center justify-between font-mono text-xs">
+                    <span className="text-white/60 text-[11px]">
+                      TOTAL: {footages.length} ARCHIVED REELS
+                    </span>
+
+                    <span className="font-bold uppercase tracking-wider text-white group-hover:text-[#e0492a] inline-flex items-center gap-1.5">
+                      <span>OPEN GALLERY</span>
+                      <span>&rarr;</span>
+                    </span>
+                  </div>
+                </article>
+              </div>
+            );
+          }
 
           return (
             <article 

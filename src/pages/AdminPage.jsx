@@ -7,14 +7,21 @@ import {
   createProject, 
   updateProject, 
   deleteProject, 
+  fetchAdminFootages,
+  updateFootage,
+  deleteFootage,
+  upsertFootage,
+  updateFootagesOrder,
   uploadPortfolioMedia,
   loginAdmin, 
   logoutAdmin, 
   getCurrentAdmin,
-  getAdminSessionRemainingMs 
+  getAdminSessionRemainingMs,
+  isValidUUID
 } from '../lib/supabase';
 import SwissLogo from '../components/ui/SwissLogo';
 import { getLocalProject } from '../hooks/useProjects';
+import { MOTION_FOOTAGES } from '../data/portfolioData';
 
 function sanitizeSlug(str) {
   if (!str) return '';
@@ -41,6 +48,29 @@ export default function AdminPage() {
   const [activeModal, setActiveModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
+
+  // Dashboard tab: 'projects' | 'footages'
+  const [adminTab, setAdminTab] = useState('projects');
+
+  // Footages state
+  const [footages, setFootages] = useState([]);
+  const [footagesLoading, setFootagesLoading] = useState(false);
+  const [activeFootageModal, setActiveFootageModal] = useState(false);
+  const [editingFootage, setEditingFootage] = useState(null);
+  const [footageFormData, setFootageFormData] = useState({
+    title: '',
+    slug: '',
+    subtitle: '',
+    category: 'Aftermovie & Motion Direction',
+    year: '2026',
+    tag: 'AFTERMOVIE',
+    aspect: '16/9',
+    has_audio: true,
+    description: '',
+    video_url: '',
+    published: true,
+  });
+  const [uploadingFootageMedia, setUploadingFootageMedia] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -98,20 +128,81 @@ export default function AdminPage() {
     }
   }, [adminUser]);
 
+  // Fetch admin footages when authenticated
+  const loadFootages = useCallback(async () => {
+    if (!adminUser) return;
+    try {
+      setFootagesLoading(true);
+      const data = await fetchAdminFootages();
+      if (data && Array.isArray(data) && data.length > 0) {
+        setFootages(data);
+      } else {
+        // Fallback / initial seed from local archive
+        setFootages(MOTION_FOOTAGES.map((m, idx) => ({
+          ...m,
+          display_order: idx + 1,
+          published: true,
+          video_url: m.video,
+          has_audio: m.hasAudio,
+        })));
+      }
+    } catch (err) {
+      console.warn('Failed to load admin footages from DB, using local:', err);
+      setFootages(MOTION_FOOTAGES.map((m, idx) => ({
+        ...m,
+        display_order: idx + 1,
+        published: true,
+        video_url: m.video,
+        has_audio: m.hasAudio,
+      })));
+    } finally {
+      setFootagesLoading(false);
+    }
+  }, [adminUser]);
+
   useEffect(() => {
     if (!adminUser) return;
     let isMounted = true;
 
-    fetchAdminProjects()
-      .then((data) => {
-        if (isMounted) setProjects(data);
-      })
-      .catch((err) => {
-        console.error('Failed to load admin projects:', err);
-      })
-      .finally(() => {
-        if (isMounted) setProjectsLoading(false);
-      });
+    async function initialLoad() {
+      try {
+        const [projectsData, footagesData] = await Promise.all([
+          fetchAdminProjects().catch((err) => {
+            console.error('Failed to load admin projects:', err);
+            return [];
+          }),
+          fetchAdminFootages().catch((err) => {
+            console.warn('Failed to load admin footages from DB, using local:', err);
+            return null;
+          }),
+        ]);
+
+        if (!isMounted) return;
+
+        if (projectsData) {
+          setProjects(projectsData);
+        }
+
+        if (footagesData && Array.isArray(footagesData) && footagesData.length > 0) {
+          setFootages(footagesData);
+        } else {
+          setFootages(MOTION_FOOTAGES.map((m, idx) => ({
+            ...m,
+            display_order: idx + 1,
+            published: true,
+            video_url: m.video,
+            has_audio: m.hasAudio,
+          })));
+        }
+      } finally {
+        if (isMounted) {
+          setProjectsLoading(false);
+          setFootagesLoading(false);
+        }
+      }
+    }
+
+    initialLoad();
 
     return () => {
       isMounted = false;
@@ -385,6 +476,157 @@ export default function AdminPage() {
     }
   };
 
+  // ─── Footage Reorder and Management Handlers ───
+  const handleMoveFootage = async (index, direction) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= footages.length) return;
+
+    const reordered = [...footages];
+    const [movedItem] = reordered.splice(index, 1);
+    reordered.splice(targetIndex, 0, movedItem);
+
+    // Instant optimistic update (zero lag for user!)
+    setFootages(reordered);
+    showToast(`Posisi disetel: #${index + 1} ditukar ke #${targetIndex + 1}.`);
+
+    // Async update to Supabase
+    try {
+      await updateFootagesOrder(reordered);
+    } catch (err) {
+      console.warn('Gagal menyimpan urutan ke Supabase:', err);
+    }
+  };
+
+  const openFootageModal = (item = null) => {
+    if (item) {
+      setEditingFootage(item);
+      setFootageFormData({
+        title: item.title || '',
+        slug: item.slug || sanitizeSlug(item.title),
+        subtitle: item.subtitle || '',
+        category: item.category || 'Aftermovie & Motion Direction',
+        year: item.year || '2026',
+        tag: item.tag || 'AFTERMOVIE',
+        aspect: item.aspect || '16/9',
+        has_audio: item.has_audio ?? item.hasAudio ?? true,
+        description: item.description || '',
+        video_url: item.video_url || item.video || '',
+        published: item.published !== false,
+      });
+    } else {
+      setEditingFootage(null);
+      setFootageFormData({
+        title: '',
+        slug: '',
+        subtitle: '',
+        category: 'Aftermovie & Motion Direction',
+        year: '2026',
+        tag: 'AFTERMOVIE',
+        aspect: '16/9',
+        has_audio: true,
+        description: '',
+        video_url: '',
+        published: true,
+      });
+    }
+    setActiveFootageModal(true);
+  };
+
+  const handleSaveFootage = async (e) => {
+    e.preventDefault();
+    if (!footageFormData.title) {
+      alert('Judul video wajib diisi.');
+      return;
+    }
+    if (!footageFormData.video_url) {
+      alert('Harap upload file video (.mp4) atau cantumkan URL video.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const payload = {
+        title: footageFormData.title.trim(),
+        slug: sanitizeSlug(footageFormData.slug || footageFormData.title),
+        subtitle: footageFormData.subtitle.trim(),
+        category: footageFormData.category.trim(),
+        year: footageFormData.year.trim() || '2026',
+        tag: footageFormData.tag.trim().toUpperCase() || 'REEL',
+        aspect: footageFormData.aspect || '16/9',
+        has_audio: Boolean(footageFormData.has_audio),
+        description: footageFormData.description.trim(),
+        video_url: footageFormData.video_url.trim(),
+        published: Boolean(footageFormData.published),
+      };
+
+      if (editingFootage && isValidUUID(editingFootage.id)) {
+        await updateFootage(editingFootage.id, payload);
+        showToast('Footage video berhasil diperbarui.');
+      } else {
+        // Fallback item atau item baru: simpan/upsert berdasarkan slug
+        payload.display_order = editingFootage?.display_order || footages.length + 1;
+        await upsertFootage(payload);
+        showToast('Footage video berhasil disimpan ke database.');
+      }
+
+      setActiveFootageModal(false);
+      loadFootages();
+    } catch (err) {
+      if (err.message && (err.message.includes('showcase_videos') || err.message.includes('schema cache'))) {
+        alert('Tabel "public.showcase_videos" belum dibuat di database Supabase Anda.\n\nSolusi: Buka Supabase Dashboard > SQL Editor, lalu jalankan script SQL untuk membuat tabel showcase_videos (lihat panduan/file supabase_setup.sql).');
+      } else {
+        alert(`Error menyimpan video: ${err.message}`);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteFootage = async (id, title) => {
+    if (!window.confirm(`Yakin ingin menghapus video "${title}"?`)) return;
+    try {
+      if (isValidUUID(id)) {
+        await deleteFootage(id);
+      } else if (typeof id === 'string') {
+        await deleteFootage(id).catch(() => {});
+      }
+      setFootages((prev) => prev.filter((f) => f.id !== id && f.slug !== id));
+      showToast('Footage dihapus dari koleksi.');
+    } catch (err) {
+      alert(`Error menghapus video: ${err.message}`);
+    }
+  };
+
+  const handleToggleFootagePublish = async (item) => {
+    try {
+      const nextPublished = !item.published;
+      const targetKey = isValidUUID(item.id) ? item.id : (item.slug || item.id);
+      await updateFootage(targetKey, { published: nextPublished }).catch((err) => {
+        console.warn('Draft toggle local sync:', err);
+      });
+      setFootages((prev) => prev.map((f) => (f.id === item.id ? { ...f, published: nextPublished } : f)));
+      showToast(nextPublished ? 'Footage LIVE di galeri.' : 'Footage diubah ke DRAFT.');
+    } catch (err) {
+      alert(`Update error: ${err.message}`);
+    }
+  };
+
+  const handleFootageFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingFootageMedia(true);
+      const publicUrl = await uploadPortfolioMedia(file);
+      setFootageFormData((prev) => ({ ...prev, video_url: publicUrl }));
+      showToast('Video terunggah ke Supabase Storage.');
+    } catch (err) {
+      alert(`Gagal mengunggah video: ${err.message}`);
+    } finally {
+      setUploadingFootageMedia(false);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-[#fbfbfa] flex items-center justify-center font-mono text-xs uppercase tracking-wider text-[#0A0A0A]">
@@ -526,125 +768,351 @@ export default function AdminPage() {
         /* ─── Authenticated Dashboard View ─── */
         <main className="max-w-[1440px] mx-auto px-6 sm:px-10 pt-10">
           
-          {/* Action Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#0A0A0A] pb-5 mb-8">
-            <div>
-              <span className="font-mono text-xs uppercase tracking-widest text-[#e0492a] font-bold block mb-1">
-                [PORTFOLIO DATABASE CONTROL]
-              </span>
-              <h1 className="text-2xl sm:text-3xl font-bold uppercase text-[#0A0A0A] tracking-tight">
-                Curated Commissions ({projects.length})
-              </h1>
-            </div>
+          {/* Studio Tab Switcher */}
+          <div className="flex flex-wrap items-center gap-3 border-b-2 border-[#0A0A0A] pb-4 mb-8 font-mono text-xs uppercase tracking-wider">
+            <button
+              type="button"
+              onClick={() => setAdminTab('projects')}
+              className={`px-4 py-2.5 rounded-lg font-bold transition-all ${
+                adminTab === 'projects'
+                  ? 'bg-[#0A0A0A] !text-white shadow-sm'
+                  : 'bg-white border border-[rgba(10,10,10,0.15)] text-[#434b5c] hover:border-[#0A0A0A] hover:text-[#0A0A0A]'
+              }`}
+            >
+              [01 // COMMISSIONS &amp; CASE STUDIES ({projects.length})]
+            </button>
 
             <button
               type="button"
-              onClick={() => openModal()}
-              style={{ color: '#ffffff' }}
-              className="inline-flex items-center gap-2 px-5 py-3 bg-[#0A0A0A] !text-white hover:bg-[#e0492a] rounded-lg font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-sm"
+              onClick={() => setAdminTab('footages')}
+              className={`px-4 py-2.5 rounded-lg font-bold transition-all ${
+                adminTab === 'footages'
+                  ? 'bg-[#0A0A0A] !text-white shadow-sm'
+                  : 'bg-white border border-[rgba(10,10,10,0.15)] text-[#434b5c] hover:border-[#0A0A0A] hover:text-[#0A0A0A]'
+              }`}
             >
-              <span>+ NEW COMMISSION</span>
+              [02 // MOTION &amp; FOOTAGE ARCHIVE ({footages.length})]
             </button>
           </div>
 
-          {/* Project Cards List */}
-          {projectsLoading ? (
-            <div className="py-20 text-center font-mono text-xs uppercase text-[#8b8b8b]">
-              LOADING COMMISSIONS FROM DATABASE...
-            </div>
-          ) : projects.length === 0 ? (
-            <div className="bg-white border-2 border-dashed border-[rgba(10,10,10,0.2)] rounded-2xl p-12 text-center">
-              <p className="font-mono text-sm uppercase text-[#434b5c] mb-4">
-                NO COMMISSIONS FOUND IN DATABASE.
-              </p>
-              <button
-                type="button"
-                onClick={() => openModal()}
-                style={{ color: '#ffffff' }}
-                className="px-6 py-2.5 bg-[#0A0A0A] !text-white hover:bg-[#e0492a] rounded font-mono text-xs font-bold uppercase"
-              >
-                CREATE YOUR FIRST COMMISSION
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((proj) => (
-                <article
-                  key={proj.id}
-                  className="bg-white border-2 border-[rgba(10,10,10,0.12)] rounded-2xl p-5 shadow-sm hover:border-[#0A0A0A] transition-all flex flex-col justify-between"
+          {/* ─── TAB 1: COMMISSIONS & CASE STUDIES ─── */}
+          {adminTab === 'projects' && (
+            <>
+              {/* Action Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[rgba(10,10,10,0.1)] pb-5 mb-8">
+                <div>
+                  <span className="font-mono text-xs uppercase tracking-widest text-[#e0492a] font-bold block mb-1">
+                    [PORTFOLIO DATABASE CONTROL]
+                  </span>
+                  <h1 className="text-2xl sm:text-3xl font-bold uppercase text-[#0A0A0A] tracking-tight">
+                    Curated Commissions ({projects.length})
+                  </h1>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => openModal()}
+                  style={{ color: '#ffffff' }}
+                  className="inline-flex items-center gap-2 px-5 py-3 bg-[#0A0A0A] !text-white hover:bg-[#e0492a] rounded-lg font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-sm"
                 >
-                  <div>
-                    {/* Media Thumbnail */}
-                    <div className="relative w-full aspect-[16/10] bg-[#111318] rounded-lg overflow-hidden border border-[rgba(10,10,10,0.1)] mb-4">
-                      <img
-                        src={proj.thumbnail_url}
-                        alt={proj.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-white/95 rounded font-mono text-[9px] font-bold text-[#0A0A0A] uppercase">
-                        {proj.year}
+                  <span>+ NEW COMMISSION</span>
+                </button>
+              </div>
+
+              {/* Project Cards List */}
+              {projectsLoading ? (
+                <div className="py-20 text-center font-mono text-xs uppercase text-[#8b8b8b]">
+                  LOADING COMMISSIONS FROM DATABASE...
+                </div>
+              ) : projects.length === 0 ? (
+                <div className="bg-white border-2 border-dashed border-[rgba(10,10,10,0.2)] rounded-2xl p-12 text-center">
+                  <p className="font-mono text-sm uppercase text-[#434b5c] mb-4">
+                    NO COMMISSIONS FOUND IN DATABASE.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => openModal()}
+                    style={{ color: '#ffffff' }}
+                    className="px-6 py-2.5 bg-[#0A0A0A] !text-white hover:bg-[#e0492a] rounded font-mono text-xs font-bold uppercase"
+                  >
+                    CREATE YOUR FIRST COMMISSION
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {projects.map((proj) => (
+                    <article
+                      key={proj.id}
+                      className="bg-white border-2 border-[rgba(10,10,10,0.12)] rounded-2xl p-5 shadow-sm hover:border-[#0A0A0A] transition-all flex flex-col justify-between"
+                    >
+                      <div>
+                        {/* Media Thumbnail */}
+                        <div className="relative w-full aspect-[16/10] bg-[#111318] rounded-lg overflow-hidden border border-[rgba(10,10,10,0.1)] mb-4">
+                          <img
+                            src={proj.thumbnail_url}
+                            alt={proj.title}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-white/95 rounded font-mono text-[9px] font-bold text-[#0A0A0A] uppercase">
+                            {proj.year}
+                          </div>
+
+                          <div className="absolute top-2.5 right-2.5">
+                            <button
+                              type="button"
+                              onClick={() => handleTogglePublish(proj)}
+                              className={`px-2 py-0.5 rounded font-mono text-[9px] font-bold uppercase transition-colors ${
+                                proj.published
+                                  ? 'bg-[#d8ff00] text-[#0A0A0A]'
+                                  : 'bg-red-500 text-white'
+                              }`}
+                            >
+                              {proj.published ? 'LIVE' : 'DRAFT'}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="font-mono text-[10px] text-[#e0492a] font-bold uppercase mb-1">
+                          {proj.category}
+                        </div>
+
+                        <h2 className="text-xl font-bold uppercase text-[#0A0A0A] mb-1">
+                          {proj.title}
+                        </h2>
+
+                        <p className="text-xs text-[#555d70] line-clamp-2 mb-3">
+                          {proj.subtitle || proj.summary}
+                        </p>
+
+                        {/* Metrics preview */}
+                        {Array.isArray(proj.metrics) && proj.metrics.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mb-4">
+                            {proj.metrics.map((m, mIdx) => (
+                              <span key={mIdx} className="px-2 py-0.5 bg-[#f0f2f5] border border-[rgba(10,10,10,0.08)] rounded font-mono text-[9px] text-[#242938]">
+                                <strong>{m.value}</strong> &bull; {m.label}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
 
-                      <div className="absolute top-2.5 right-2.5">
+                      {/* Actions */}
+                      <div className="pt-4 border-t border-[rgba(10,10,10,0.08)] flex items-center justify-between font-mono text-xs">
                         <button
                           type="button"
-                          onClick={() => handleTogglePublish(proj)}
-                          className={`px-2 py-0.5 rounded font-mono text-[9px] font-bold uppercase transition-colors ${
-                            proj.published
-                              ? 'bg-[#d8ff00] text-[#0A0A0A]'
-                              : 'bg-red-500 text-white'
-                          }`}
+                          onClick={() => openModal(proj)}
+                          className="px-3 py-1.5 bg-[#f4f5f8] hover:bg-[#0A0A0A] hover:text-white rounded font-bold uppercase transition-all"
                         >
-                          {proj.published ? 'LIVE' : 'DRAFT'}
+                          EDIT
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(proj.id, proj.title)}
+                          className="text-[#e0492a] hover:underline font-bold uppercase text-[11px]"
+                        >
+                          DELETE
                         </button>
                       </div>
-                    </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
 
-                    <div className="font-mono text-[10px] text-[#e0492a] font-bold uppercase mb-1">
-                      {proj.category}
-                    </div>
+          {/* ─── TAB 2: MOTION & FOOTAGE ARCHIVE ─── */}
+          {adminTab === 'footages' && (
+            <>
+              {/* Action Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[rgba(10,10,10,0.1)] pb-5 mb-6">
+                <div>
+                  <span className="font-mono text-xs uppercase tracking-widest text-[#e0492a] font-bold block mb-1">
+                    [MOTION VAULT &amp; SHOWCASE CONTROL]
+                  </span>
+                  <h1 className="text-2xl sm:text-3xl font-bold uppercase text-[#0A0A0A] tracking-tight">
+                    Directed Footage Vault ({footages.length})
+                  </h1>
+                </div>
 
-                    <h2 className="text-xl font-bold uppercase text-[#0A0A0A] mb-1">
-                      {proj.title}
-                    </h2>
+                <div className="flex items-center gap-3">
+                  <Link
+                    to="/showcase"
+                    target="_blank"
+                    className="px-4 py-3 bg-white border border-[rgba(10,10,10,0.15)] hover:border-[#0A0A0A] rounded-lg font-mono text-xs font-bold uppercase tracking-wider text-[#0A0A0A] transition-all"
+                  >
+                    PREVIEW GALLERY &nearr;
+                  </Link>
 
-                    <p className="text-xs text-[#555d70] line-clamp-2 mb-3">
-                      {proj.subtitle || proj.summary}
-                    </p>
+                  <button
+                    type="button"
+                    onClick={() => openFootageModal()}
+                    style={{ color: '#ffffff' }}
+                    className="inline-flex items-center gap-2 px-5 py-3 bg-[#0A0A0A] !text-white hover:bg-[#e0492a] rounded-lg font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-sm"
+                  >
+                    <span>+ NEW VIDEO FOOTAGE</span>
+                  </button>
+                </div>
+              </div>
 
-                    {/* Metrics preview */}
-                    {Array.isArray(proj.metrics) && proj.metrics.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mb-4">
-                        {proj.metrics.map((m, mIdx) => (
-                          <span key={mIdx} className="px-2 py-0.5 bg-[#f0f2f5] border border-[rgba(10,10,10,0.08)] rounded font-mono text-[9px] text-[#242938]">
-                            <strong>{m.value}</strong> &bull; {m.label}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+              {/* Reorder Instructional Guide Banner */}
+              <div className="p-4 sm:p-5 bg-[#f6f7f9] border border-[rgba(10,10,10,0.12)] rounded-xl font-mono text-xs mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-[#e0492a] text-lg font-bold">ℹ</span>
+                  <div className="leading-relaxed">
+                    <span className="font-bold text-[#0A0A0A]">PENGATURAN TATA LETAK:</span>
+                    <span className="text-[#555d70] ml-1.5">
+                      Gunakan tombol panah <strong>[▲ NAIK]</strong> dan <strong>[▼ TURUN]</strong> untuk menyetel urutan video. Posisi <strong>#01 &ndash; #03</strong> tampil normal di HomePage, <strong>#04</strong> menjadi kartu bertumpuk menuju galeri, dan seluruh koleksi tampil di <code>/showcase</code>.
+                    </span>
                   </div>
+                </div>
 
-                  {/* Actions */}
-                  <div className="pt-4 border-t border-[rgba(10,10,10,0.08)] flex items-center justify-between font-mono text-xs">
-                    <button
-                      type="button"
-                      onClick={() => openModal(proj)}
-                      className="px-3 py-1.5 bg-[#f4f5f8] hover:bg-[#0A0A0A] hover:text-white rounded font-bold uppercase transition-all"
-                    >
-                      EDIT
-                    </button>
+                <span className="px-3 py-1 bg-white border rounded text-[10px] uppercase font-bold text-[#0A0A0A] whitespace-nowrap">
+                  AUTO-SAVED
+                </span>
+              </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(proj.id, proj.title)}
-                      className="text-[#e0492a] hover:underline font-bold uppercase text-[11px]"
-                    >
-                      DELETE
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
+              {/* Footage Cards List */}
+              {footagesLoading ? (
+                <div className="py-20 text-center font-mono text-xs uppercase text-[#8b8b8b]">
+                  LOADING FOOTAGE VAULT...
+                </div>
+              ) : footages.length === 0 ? (
+                <div className="bg-white border-2 border-dashed border-[rgba(10,10,10,0.2)] rounded-2xl p-12 text-center">
+                  <p className="font-mono text-sm uppercase text-[#434b5c] mb-4">
+                    BELUM ADA FOOTAGE DI DATABASE.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => openFootageModal()}
+                    style={{ color: '#ffffff' }}
+                    className="px-6 py-2.5 bg-[#0A0A0A] !text-white hover:bg-[#e0492a] rounded font-mono text-xs font-bold uppercase"
+                  >
+                    TAMBAH FOOTAGE PERTAMA
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {footages.map((item, idx) => {
+                    const isFirst = idx === 0;
+                    const isLast = idx === footages.length - 1;
+                    const isFeaturedOnHome = idx < 4;
+
+                    return (
+                      <article
+                        key={item.id || idx}
+                        className="bg-white border-2 border-[rgba(10,10,10,0.12)] rounded-2xl p-5 shadow-sm hover:border-[#0A0A0A] transition-all flex flex-col justify-between"
+                      >
+                        <div>
+                          {/* Top Rank Badge & Reorder Arrows */}
+                          <div className="flex items-center justify-between pb-3 mb-3 border-b border-[rgba(10,10,10,0.08)] font-mono text-xs">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2.5 py-1 bg-[#0A0A0A] text-white rounded font-bold text-[11px]">
+                                #{String(idx + 1).padStart(2, '0')}
+                              </span>
+                              {isFeaturedOnHome && (
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                  idx === 3 
+                                    ? 'bg-[#e0492a] text-white' 
+                                    : 'bg-[#f0f2f5] text-[#242938]'
+                                }`}>
+                                  {idx === 3 ? 'HOME: STACK DECK' : 'HOME: SLOT ' + (idx + 1)}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Easy Reorder Buttons */}
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                disabled={isFirst}
+                                onClick={() => handleMoveFootage(idx, -1)}
+                                title="Pindahkan posisi ke atas"
+                                className="px-2 py-1 bg-[#f4f5f8] hover:bg-[#0A0A0A] hover:text-white disabled:opacity-30 disabled:hover:bg-[#f4f5f8] disabled:hover:text-inherit rounded font-bold transition-all text-[11px]"
+                              >
+                                ▲ NAIK
+                              </button>
+
+                              <button
+                                type="button"
+                                disabled={isLast}
+                                onClick={() => handleMoveFootage(idx, 1)}
+                                title="Pindahkan posisi ke bawah"
+                                className="px-2 py-1 bg-[#f4f5f8] hover:bg-[#0A0A0A] hover:text-white disabled:opacity-30 disabled:hover:bg-[#f4f5f8] disabled:hover:text-inherit rounded font-bold transition-all text-[11px]"
+                              >
+                                ▼ TURUN
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Video Thumbnail Frame */}
+                          <div className="relative w-full aspect-[16/10] bg-[#111318] rounded-lg overflow-hidden border border-[rgba(10,10,10,0.1)] mb-4">
+                            <video
+                              src={item.video_url || item.video}
+                              muted
+                              playsInline
+                              preload="metadata"
+                              className="w-full h-full object-cover"
+                            />
+
+                            <div className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-white/95 rounded font-mono text-[9px] font-bold text-[#0A0A0A] uppercase">
+                              {item.year || '2026'} &bull; {item.tag || 'REEL'}
+                            </div>
+
+                            <div className="absolute top-2.5 right-2.5">
+                              <button
+                                type="button"
+                                onClick={() => handleToggleFootagePublish(item)}
+                                className={`px-2 py-0.5 rounded font-mono text-[9px] font-bold uppercase transition-colors ${
+                                  item.published
+                                    ? 'bg-[#d8ff00] text-[#0A0A0A]'
+                                    : 'bg-red-500 text-white'
+                                }`}
+                              >
+                                {item.published ? 'LIVE' : 'DRAFT'}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 font-mono text-[10px] text-[#e0492a] font-bold uppercase mb-1">
+                            <span>{item.category}</span>
+                            <span className="text-[#8b8b8b]">&bull;</span>
+                            <span className="text-[#555d70]">{item.has_audio ? 'SOUND' : 'MUTED'}</span>
+                          </div>
+
+                          <h2 className="text-xl font-bold uppercase text-[#0A0A0A] mb-1">
+                            {item.title}
+                          </h2>
+
+                          <p className="text-xs text-[#555d70] line-clamp-2 mb-3">
+                            {item.subtitle || item.description}
+                          </p>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="pt-4 border-t border-[rgba(10,10,10,0.08)] flex items-center justify-between font-mono text-xs">
+                          <button
+                            type="button"
+                            onClick={() => openFootageModal(item)}
+                            className="px-3 py-1.5 bg-[#f4f5f8] hover:bg-[#0A0A0A] hover:text-white rounded font-bold uppercase transition-all"
+                          >
+                            EDIT
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteFootage(item.id, item.title)}
+                            className="text-[#e0492a] hover:underline font-bold uppercase text-[11px]"
+                          >
+                            HAPUS
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </>
           )}
 
         </main>
@@ -982,6 +1450,251 @@ export default function AdminPage() {
                   className="px-6 py-2.5 bg-[#0A0A0A] !text-white hover:bg-[#e0492a] rounded font-bold uppercase tracking-wider transition-all"
                 >
                   {isSubmitting ? 'SAVING...' : 'SAVE COMMISSION →'}
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Footage Video Editor Modal ─── */}
+      {activeFootageModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white border-2 border-[#0A0A0A] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl relative my-auto">
+            
+            <div className="flex items-center justify-between border-b pb-4 mb-6">
+              <div>
+                <span className="font-mono text-[10px] text-[#e0492a] font-bold uppercase tracking-wider block">
+                  [ARCHIVE MANAGER]
+                </span>
+                <h2 className="text-xl font-bold uppercase text-[#0A0A0A]">
+                  {editingFootage ? 'Edit Footage Reel' : 'Tambah Footage Baru'}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveFootageModal(false)}
+                className="font-mono text-xs font-bold text-[#8b8b8b] hover:text-[#0A0A0A] p-1"
+              >
+                [CLOSE &times;]
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveFootage} className="space-y-5 font-mono text-xs">
+              
+              {/* Video File Upload / URL Area */}
+              <div className="p-5 bg-[#f6f7f9] border-2 border-dashed border-[rgba(10,10,10,0.2)] rounded-xl text-center">
+                <span className="block font-bold uppercase text-[11px] mb-2 text-[#0A0A0A]">
+                  UPLOAD VIDEO FILE (.MP4 / .WEBM)
+                </span>
+                
+                {footageFormData.video_url ? (
+                  <div className="relative w-full aspect-[16/9] max-w-sm mx-auto rounded overflow-hidden border border-[#0A0A0A] bg-black mb-3">
+                    <video
+                      src={footageFormData.video_url}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : null}
+
+                <input
+                  type="file"
+                  accept="video/mp4,video/webm,video/quicktime"
+                  onChange={handleFootageFileUpload}
+                  disabled={uploadingFootageMedia}
+                  className="text-xs file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-mono file:font-bold file:bg-[#0A0A0A] file:text-white hover:file:bg-[#e0492a] cursor-pointer"
+                />
+                
+                {uploadingFootageMedia && (
+                  <p className="text-[11px] text-[#e0492a] font-bold mt-2 animate-pulse">
+                    MENGUNGGAH VIDEO KE SUPABASE STORAGE...
+                  </p>
+                )}
+
+                <div className="mt-3">
+                  <input
+                    type="url"
+                    placeholder="Atau tempel URL video (.mp4) langsung..."
+                    value={footageFormData.video_url}
+                    onChange={(e) => setFootageFormData((prev) => ({ ...prev, video_url: e.target.value }))}
+                    className="w-full px-3 py-2 bg-white border border-[rgba(10,10,10,0.15)] rounded text-xs font-sans"
+                  />
+                </div>
+              </div>
+
+              {/* Title & Slug */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-[#6a7285] uppercase mb-1">
+                    JUDUL VIDEO *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={footageFormData.title}
+                    onChange={(e) => {
+                      const title = e.target.value;
+                      setFootageFormData((prev) => ({
+                        ...prev,
+                        title,
+                        slug: prev.slug || sanitizeSlug(title),
+                      }));
+                    }}
+                    placeholder="e.g. Kinetic Brand Pulse"
+                    className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border rounded font-sans text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-[#6a7285] uppercase mb-1">
+                    SLUG (URL PATH) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={footageFormData.slug}
+                    onChange={(e) => setFootageFormData((prev) => ({ 
+                      ...prev, 
+                      slug: sanitizeSlug(e.target.value) 
+                    }))}
+                    placeholder="e.g. kinetic-brand-pulse"
+                    className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border rounded font-sans text-sm font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Subtitle & Category */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-[#6a7285] uppercase mb-1">
+                    SUBTITLE
+                  </label>
+                  <input
+                    type="text"
+                    value={footageFormData.subtitle}
+                    onChange={(e) => setFootageFormData((prev) => ({ ...prev, subtitle: e.target.value }))}
+                    placeholder="e.g. Aftermovie & Sound Design Experiment"
+                    className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border rounded font-sans text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-[#6a7285] uppercase mb-1">
+                    CATEGORY
+                  </label>
+                  <input
+                    type="text"
+                    value={footageFormData.category}
+                    onChange={(e) => setFootageFormData((prev) => ({ ...prev, category: e.target.value }))}
+                    placeholder="e.g. Aftermovie & Motion Direction"
+                    className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border rounded font-sans text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Year, Tag & Aspect Ratio */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-[#6a7285] uppercase mb-1">
+                    TAHUN
+                  </label>
+                  <input
+                    type="text"
+                    value={footageFormData.year}
+                    onChange={(e) => setFootageFormData((prev) => ({ ...prev, year: e.target.value }))}
+                    placeholder="2026"
+                    className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border rounded font-sans text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-[#6a7285] uppercase mb-1">
+                    TAG LABEL
+                  </label>
+                  <input
+                    type="text"
+                    value={footageFormData.tag}
+                    onChange={(e) => setFootageFormData((prev) => ({ ...prev, tag: e.target.value.toUpperCase() }))}
+                    placeholder="AFTERMOVIE"
+                    className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border rounded font-sans text-sm font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-[#6a7285] uppercase mb-1">
+                    ASPECT RATIO
+                  </label>
+                  <select
+                    value={footageFormData.aspect}
+                    onChange={(e) => setFootageFormData((prev) => ({ ...prev, aspect: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border rounded font-sans text-sm"
+                  >
+                    <option value="16/9">16:9 (Widescreen HD)</option>
+                    <option value="4/3">4:3 (Classic Academy)</option>
+                    <option value="16/10">16:10 (Display)</option>
+                    <option value="9/16">9:16 (Vertical Story)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-[10px] font-bold text-[#6a7285] uppercase mb-1">
+                  DESKRIPSI LENGKAP FOOTAGE
+                </label>
+                <textarea
+                  rows={3}
+                  value={footageFormData.description}
+                  onChange={(e) => setFootageFormData((prev) => ({ ...prev, description: e.target.value }))}
+                  placeholder="Catatan sutradara, sound design highlights, atau konteks sinematik..."
+                  className="w-full px-3.5 py-2 bg-[#f8f9fa] border rounded font-sans text-sm"
+                />
+              </div>
+
+              {/* Toggles */}
+              <div className="flex flex-wrap items-center gap-6 pt-4 border-t">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={footageFormData.has_audio}
+                    onChange={(e) => setFootageFormData((prev) => ({ ...prev, has_audio: e.target.checked }))}
+                    className="w-4 h-4 accent-[#0A0A0A]"
+                  />
+                  <span className="font-bold uppercase text-[11px]">TREK SUARA AKTIF (HAS AUDIO)</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={footageFormData.published}
+                    onChange={(e) => setFootageFormData((prev) => ({ ...prev, published: e.target.checked }))}
+                    className="w-4 h-4 accent-[#0A0A0A]"
+                  />
+                  <span className="font-bold uppercase text-[11px]">PUBLISHED (TAMPIL DI SITUS &amp; GALERI)</span>
+                </label>
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-6 border-t">
+                <button
+                  type="button"
+                  onClick={() => setActiveFootageModal(false)}
+                  className="px-5 py-2.5 border border-[rgba(10,10,10,0.2)] rounded font-bold uppercase hover:bg-[#f4f5f8] transition-colors"
+                >
+                  BATAL
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting || uploadingFootageMedia}
+                  style={{ color: '#ffffff' }}
+                  className="px-6 py-2.5 bg-[#0A0A0A] !text-white hover:bg-[#e0492a] disabled:opacity-50 rounded font-bold uppercase tracking-wider transition-all"
+                >
+                  {isSubmitting ? 'MENYIMPAN...' : 'SIMPAN FOOTAGE →'}
                 </button>
               </div>
 

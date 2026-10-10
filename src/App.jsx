@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { ThemeProvider } from './context/ThemeContext';
 import HomePage from './pages/HomePage';
 import CaseStudyPage from './pages/CaseStudyPage';
+import ShowcasePage from './pages/ShowcasePage';
 import ScrollHandler from './components/ScrollHandler';
 
 const AdminPage = lazy(() => import('./pages/AdminPage'));
@@ -21,6 +22,8 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/project/:id" element={<CaseStudyPage />} />
+          <Route path="/showcase" element={<ShowcasePage />} />
+          <Route path="/motion" element={<Navigate to="/showcase" replace />} />
           <Route 
             path="/admin" 
             element={
