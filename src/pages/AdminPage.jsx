@@ -20,7 +20,12 @@ import {
   isValidUUID
 } from '../lib/supabase';
 import SwissLogo from '../components/ui/SwissLogo';
-import { getLocalProject } from '../hooks/useProjects';
+import { 
+  getLocalProject, 
+  getDeletedProjects, 
+  markProjectDeleted, 
+  unmarkProjectDeleted 
+} from '../hooks/useProjects';
 import { FEATURED_PROJECTS, MOTION_FOOTAGES } from '../data/portfolioData';
 
 function sanitizeSlug(str) {
@@ -121,22 +126,33 @@ export default function AdminPage() {
 
   const mergeProjectsWithFallback = useCallback((dbProjects) => {
     if (!dbProjects || !Array.isArray(dbProjects)) return [];
-    const existingSlugs = new Set(dbProjects.map((p) => (p.slug || '').toLowerCase()));
+    const deleted = getDeletedProjects();
+    const filteredDbProjects = dbProjects.filter((p) => {
+      const slug = (p.slug || p.id || '').toLowerCase();
+      const id = (p.id || '').toLowerCase();
+      return !deleted.has(slug) && !deleted.has(id);
+    });
+    const existingSlugs = new Set(filteredDbProjects.map((p) => (p.slug || '').toLowerCase()));
     const missingLocals = FEATURED_PROJECTS.filter(
-      (fp) => !existingSlugs.has(fp.id.toLowerCase()) && 
-              !existingSlugs.has((fp.slug || '').toLowerCase()) &&
-              !(fp.id === 'cadence-audio' && existingSlugs.has('cadence')) &&
-              !(fp.id === 'sed-8' && (existingSlugs.has('lumen-os') || existingSlugs.has('sed#8'))) &&
-              !(fp.id === 'Skyrace' && (existingSlugs.has('quiet-mornings') || existingSlugs.has('merbabu-skyrace')))
+      (fp) => {
+        const fpId = fp.id.toLowerCase();
+        const fpSlug = (fp.slug || '').toLowerCase();
+        if (deleted.has(fpId) || deleted.has(fpSlug)) return false;
+        return !existingSlugs.has(fpId) && 
+               !existingSlugs.has(fpSlug) &&
+               !(fp.id === 'cadence-audio' && existingSlugs.has('cadence')) &&
+               !(fp.id === 'sed-8' && (existingSlugs.has('lumen-os') || existingSlugs.has('sed#8'))) &&
+               !(fp.id === 'Skyrace' && (existingSlugs.has('quiet-mornings') || existingSlugs.has('merbabu-skyrace')));
+      }
     ).map((fp, i) => ({
       ...fp,
       slug: fp.slug || fp.id,
-      display_order: dbProjects.length + i + 1,
+      display_order: filteredDbProjects.length + i + 1,
       published: true,
       thumbnail_url: typeof fp.thumbnail === 'string' ? fp.thumbnail : '',
       isLocalDraft: true,
     }));
-    return [...dbProjects, ...missingLocals];
+    return [...filteredDbProjects, ...missingLocals];
   }, []);
 
   // Fetch admin projects when authenticated
@@ -468,6 +484,7 @@ export default function AdminPage() {
         await upsertProject(payload);
         showToast('Commission saved to database!');
       }
+      unmarkProjectDeleted(payload.slug);
       setActiveModal(false);
       loadProjects();
     } catch (err) {
@@ -478,17 +495,34 @@ export default function AdminPage() {
   };
 
   // Delete Project
-  const handleDelete = async (id, title) => {
+  const handleDelete = async (proj) => {
+    const id = proj?.id;
+    const slug = proj?.slug || proj?.id;
+    const title = proj?.title || slug || 'Project';
+
     if (!window.confirm(`Are you sure you want to delete commission "${title}"?`)) return;
+
+    // Optimistically remove from UI state immediately
+    setProjects((prev) => prev.filter((p) => p.id !== id && p.slug !== slug && p.id !== slug));
+
+    // Persist deleted state to prevent local fallback respawn
+    markProjectDeleted(id);
+    markProjectDeleted(slug);
+    if (slug === 'cadence' || id === 'cadence') {
+      markProjectDeleted('cadence-audio');
+    }
+    if (slug === 'cadence-audio' || id === 'cadence-audio') {
+      markProjectDeleted('cadence');
+    }
 
     try {
       if (isValidUUID(id)) {
         await deleteProject(id);
-      } else if (typeof id === 'string') {
-        await deleteProject(id).catch(() => {});
+      } else if (typeof slug === 'string') {
+        await deleteProject(slug).catch(() => {});
       }
       showToast('Commission deleted.');
-      loadProjects();
+      await loadProjects();
     } catch (err) {
       alert(`Delete error: ${err.message}`);
     }
@@ -993,7 +1027,7 @@ export default function AdminPage() {
 
                         <button
                           type="button"
-                          onClick={() => handleDelete(proj.id, proj.title)}
+                          onClick={() => handleDelete(proj)}
                           className="text-[#e0492a] hover:underline font-bold uppercase text-[11px]"
                         >
                           DELETE

@@ -4,7 +4,6 @@ import VideoMotion from '../assets/footages/motion.mp4';
 import VideoOrteca from '../assets/footages/orteca.mp4';
 import pj1 from '../assets/images/pj1.webp';
 import pj2 from '../assets/images/pj2.webp';
-import pj3 from '../assets/images/pj3.webp';
 import pj4 from '../assets/images/pj4.webp';
 
 export const PROFILE = {  
@@ -126,30 +125,6 @@ export const FEATURED_PROJECTS = [
     results: 'Produced a high-energy recap film and promotional media assets that effectively captured the spirit of the event.',
     links: [
       { label: 'Watch Video', href: 'https://instagram.com/abelagaphe' },
-    ],
-  },
-  {
-    id: 'cadence-audio',
-    title: 'Cadence',
-    subtitle: 'Tactile Audio Journaling Interface',
-    category: 'Interaction Design & Creative Technology',
-    role: 'Design Director & Interaction Lead',
-    year: '2024',
-    featured: false,
-    thumbnail: pj3,
-    video: VideoFinal,
-    summary: 'A client-side audio journaling tool featuring real-time waveform visualization, tactile typography, and on-device recording privacy.',
-    tags: ['Interaction Design', 'Web Audio API', 'Next.js', 'Typography'],
-    metrics: [
-      { label: 'Server Dependency', value: 'Zero Cloud Audio' },
-      { label: 'Bundle Footprint', value: 'Sub-45KB JS' },
-    ],
-    challenge: 'Voice journaling applications frequently require cloud transcription, raising privacy concerns for users who want a secure personal space for uninhibited voice reflection.',
-    solution: 'Directed and built an entirely client-side web application leveraging the browser Web Audio API and IndexedDB for local audio storage, paired with an uncluttered, focus-oriented UI.',
-    process: 'Designed an interactive SVG waveform visualizer running smoothly on requestAnimationFrame. Implemented full keyboard navigation and high-contrast color themes.',
-    results: 'Delivered an ultra-lightweight web application with zero external API dependencies, immediate audio playback, and complete user data sovereignty.',
-    links: [
-      { label: 'View Source', href: 'https://github.com/Aberuu' },
     ],
   },
 ];
