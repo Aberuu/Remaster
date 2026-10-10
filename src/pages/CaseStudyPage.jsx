@@ -10,7 +10,14 @@ export default function CaseStudyPage() {
     window.scrollTo(0, 0);
   }, [id]);
 
-  const currentIndex = projects.findIndex((p) => p.id === id || p.slug === id);
+  const targetId = (id || '').toLowerCase();
+  const currentIndex = projects.findIndex(
+    (p) => (p.id && p.id.toLowerCase() === targetId) || 
+           (p.slug && p.slug.toLowerCase() === targetId) ||
+           (targetId === 'sed-8' && (p.id === 'sed#8' || p.id === 'lumes-os' || p.id === 'lumen-os')) ||
+           (targetId === 'sed#8' && (p.id === 'sed-8' || p.id === 'lumes-os' || p.id === 'lumen-os')) ||
+           (targetId === 'lumes-os' && (p.id === 'sed-8' || p.id === 'sed#8'))
+  );
   const project = projects[currentIndex];
 
   if (!project) {
@@ -65,6 +72,18 @@ export default function CaseStudyPage() {
           <p className="text-lg sm:text-2xl text-[#242835] font-normal leading-relaxed max-w-4xl mb-8">
             {project.subtitle || project.description}
           </p>
+
+          {/* Performance Metrics Bar */}
+          {project.metrics && project.metrics.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-5 bg-[#f6f7f9] border border-[rgba(10,10,10,0.08)] rounded-xl font-mono mb-8">
+              {project.metrics.map((m) => (
+                <div key={m.label}>
+                  <span className="block text-xl sm:text-2xl font-bold text-[#0A0A0A]">{m.value}</span>
+                  <span className="block text-[11px] text-[#5e6677] uppercase tracking-wider">{m.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Project Tags */}
           <div className="flex flex-wrap gap-2 pt-6 border-t border-[rgba(10,10,10,0.1)]">

@@ -6,10 +6,14 @@ export default function ScrollHandler() {
 
   useEffect(() => {
     if (hash) {
-      const element = document.querySelector(hash);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-        return;
+      try {
+        const element = document.querySelector(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+          return;
+        }
+      } catch {
+        // Ignore invalid CSS selector hash fragments (e.g. #8)
       }
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });

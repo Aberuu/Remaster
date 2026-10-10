@@ -2,7 +2,25 @@ import { useState, useEffect, useCallback } from 'react';
 import { FEATURED_PROJECTS } from '../data/portfolioData';
 import { fetchLiveProjects, isSupabaseConfigured } from '../lib/supabase';
 
-const localMap = new Map(FEATURED_PROJECTS.map((p) => [p.id, p]));
+export const localMap = new Map();
+FEATURED_PROJECTS.forEach((p) => {
+  localMap.set(p.id, p);
+  if (p.id === 'sed-8') {
+    localMap.set('sed#8', p);
+    localMap.set('lumes-os', p);
+    localMap.set('lumen-os', p);
+    localMap.set('smuq-8', p);
+  }
+  if (p.id === 'Skyrace') {
+    localMap.set('quiet-mornings', p);
+    localMap.set('merbabu-skyrace', p);
+    localMap.set('skyrace', p);
+  }
+});
+
+export function getLocalProject(slug) {
+  return localMap.get(slug);
+}
 
 function mapDatabaseProjects(data) {
   return data.map((item) => {
@@ -20,7 +38,7 @@ function mapDatabaseProjects(data) {
     const isUnsplashHero = typeof item.hero_image_url === 'string' && item.hero_image_url.includes('images.unsplash.com');
     const heroImage = (item.hero_image_url && !isUnsplashHero)
       ? item.hero_image_url
-      : (local?.heroImage || local?.thumbnail || thumbnail);
+      : (thumbnail || local?.heroImage || local?.thumbnail);
 
     const video = item.video_url || local?.video || null;
 

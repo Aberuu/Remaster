@@ -185,9 +185,21 @@ export default function HomePage() {
                           {project.title}
                         </h3>
 
-                        <p className="text-sm sm:text-base text-[#383f4f] leading-relaxed line-clamp-3 font-normal mb-5">
+                        <p className="text-sm sm:text-base text-[#383f4f] leading-relaxed line-clamp-3 font-normal mb-4">
                           {project.subtitle || project.description}
                         </p>
+
+                        {/* Mini Metric */}
+                        {project.metrics && project.metrics.length > 0 && (
+                          <div className="mb-4 px-3 py-2 bg-[#f6f7f9] border border-[rgba(10,10,10,0.06)] rounded-lg font-mono">
+                            <span className="block text-xs font-bold text-[#0A0A0A] truncate">
+                              {project.metrics[0].value}
+                            </span>
+                            <span className="block text-[9px] text-[#5e6677] uppercase tracking-wider truncate">
+                              {project.metrics[0].label}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Footer & Tags */}
@@ -226,22 +238,22 @@ export default function HomePage() {
                 </div>
 
                 <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#0A0A0A] leading-tight uppercase mb-6">
-                  Directing form, tension, and tactile digital craft.
+                  BRIDGING STRATEGY, DESIGN, AND TECHNOLOGY.
                 </h2>
 
                 <p className="text-base sm:text-lg text-[#252935] leading-relaxed mb-6 font-normal">
-                  I lead at the intersection of Swiss typographic discipline, generative web code, and cinematic storytelling. As a Creative Director, I reject generic digital noise in favor of intentional hierarchy, visceral contrast, and tactile feedback.
+                  I am a Creative Developer based in Indonesia, working at the intersection of visual design, branding, and interactive digital experiences. I enjoy translating concepts into cohesive visual systems from art direction and social media strategy to modern websites. 
                 </p>
 
                 <p className="text-sm sm:text-base text-[#4a5266] leading-relaxed mb-8">
-                  Partnering with founders, design studios, and visionary product teams globally to craft uncompromising brand identities, brutalist interfaces, and cinematic narratives that command attention.
+                  I believe design is more than aesthetics; it is a functional way to establish identity and create lasting impressions.
                 </p>
 
                 {/* Quick Info Table */}
                 <div className="grid grid-cols-2 gap-4 pt-6 border-t border-[rgba(10,10,10,0.1)] font-mono text-xs">
                   <div>
                     <span className="block text-[#6a7285] text-[10px] uppercase font-bold">PRIMARY ROLE</span>
-                    <span className="font-bold text-[#0A0A0A]">Creative Director &amp; Technologist</span>
+                    <span className="font-bold text-[#0A0A0A]">Creative Director &amp; Video Editor</span>
                   </div>
                   <div>
                     <span className="block text-[#6a7285] text-[10px] uppercase font-bold">LOCATION</span>
@@ -249,7 +261,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <span className="block text-[#6a7285] text-[10px] uppercase font-bold">FOCUS</span>
-                    <span className="font-bold text-[#0A0A0A]">Brand Systems &bull; Spatial UI &bull; Film</span>
+                    <span className="font-bold text-[#0A0A0A]">Visual Systems &bull; Front-End &bull; Evend Branding</span>
                   </div>
                   <div>
                     <span className="block text-[#6a7285] text-[10px] uppercase font-bold">AVAILABILITY</span>
@@ -265,26 +277,26 @@ export default function HomePage() {
                 </span>
 
                 <div className="p-6 bg-[#f7f8fa] border border-[rgba(10,10,10,0.08)] rounded-2xl">
-                  <span className="font-mono text-xs text-[#e0492a] font-bold block mb-1">01 // ARCHITECTURAL INTENT</span>
-                  <h3 className="text-lg font-bold text-[#0A0A0A] uppercase mb-2">Typography as Structural Spine</h3>
+                  <span className="font-mono text-xs text-[#e0492a] font-bold block mb-1">01 // CONSISTENCY</span>
+                  <h3 className="text-lg font-bold text-[#0A0A0A] uppercase mb-2">UNIFIED VISUAL SYSTEMS</h3>
                   <p className="text-sm text-[#3b4354] leading-relaxed">
-                    Ruthless hierarchy over ornamental fluff. Every layout is governed by mathematical Swiss grids and expressive type scale that communicates command and clarity.
+                    Building cohesive and scalable visual languages across different media and platforms, ensuring the brand identity remains strong and recognizable.
                   </p>
                 </div>
 
                 <div className="p-6 bg-[#f7f8fa] border border-[rgba(10,10,10,0.08)] rounded-2xl">
-                  <span className="font-mono text-xs text-[#e0492a] font-bold block mb-1">02 // VISCERAL TEXTURE</span>
-                  <h3 className="text-lg font-bold text-[#0A0A0A] uppercase mb-2">Tactile Digital Weight</h3>
+                  <span className="font-mono text-xs text-[#e0492a] font-bold block mb-1">02 // STORYTELLING</span>
+                  <h3 className="text-lg font-bold text-[#0A0A0A] uppercase mb-2">NARRATIVE & VISUAL PACING</h3>
                   <p className="text-sm text-[#3b4354] leading-relaxed">
-                    Marrying raw brutalist contrast with kinetic pixel art, generative canvas physics, and tactile micro-interactions that make software feel tangible and human.
+                    Crafting purpose-driven stories across digital interfaces and video formats. From event aftermovies and commercial edits to weddings and brand films, every frame is cut with intentional rhythm and emotion.
                   </p>
                 </div>
 
                 <div className="p-6 bg-[#f7f8fa] border border-[rgba(10,10,10,0.08)] rounded-2xl">
-                  <span className="font-mono text-xs text-[#e0492a] font-bold block mb-1">03 // DIRECTED MOTION</span>
-                  <h3 className="text-lg font-bold text-[#0A0A0A] uppercase mb-2">Rhythm-Locked Cinematic Pacing</h3>
+                  <span className="font-mono text-xs text-[#e0492a] font-bold block mb-1">03 // EXPERIENCE</span>
+                  <h3 className="text-lg font-bold text-[#0A0A0A] uppercase mb-2">FUNCTIONAL INTERACTION</h3>
                   <p className="text-sm text-[#3b4354] leading-relaxed">
-                    Motion is orchestrated with musical cadence and spatial continuity. Zero gratuitous decoration; every transition serves emotional impact and narrative pacing.
+                    Creating digital products and visual campaigns that are not only aesthetically striking but also highly functional. Merging smooth front-end execution with intuitive audience engagement.
                   </p>
                 </div>
               </div>
@@ -362,7 +374,9 @@ export default function HomePage() {
                 {/* Interactive Action Bar */}
                 <div className="flex flex-wrap items-center gap-4">
                   <a
-                    href={`mailto:${PROFILE.email}`}
+                    href={PROFILE.gmailUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     style={{ color: '#ffffff' }}
                     className="inline-flex items-center gap-2 px-7 py-4 bg-[#0A0A0A] !text-white hover:bg-[#e0492a] rounded-xl font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-md hover:shadow-lg"
                   >
@@ -388,7 +402,12 @@ export default function HomePage() {
                   <span className="block text-[#6a7285] text-[10px] font-bold uppercase mb-1">
                     PRIMARY DISPATCH
                   </span>
-                  <a href={`mailto:${PROFILE.email}`} className="text-base font-bold text-[#0A0A0A] hover:text-[#e0492a] transition-colors">
+                  <a 
+                    href={PROFILE.gmailUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-base font-bold text-[#0A0A0A] hover:text-[#e0492a] transition-colors"
+                  >
                     {PROFILE.email}
                   </a>
                   <p className="text-[#555d70] text-[11px] mt-1">

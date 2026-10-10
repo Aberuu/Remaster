@@ -83,7 +83,9 @@ export default function SwissHeader() {
           </div>
 
           <a
-            href={isHome ? '#contact' : `mailto:${PROFILE.email}`}
+            href={isHome ? '#contact' : PROFILE.gmailUrl}
+            target={isHome ? undefined : '_blank'}
+            rel={isHome ? undefined : 'noopener noreferrer'}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0A0A0A] !text-white hover:bg-[#e0492a] rounded text-[10px] font-bold tracking-widest transition-colors shadow-sm"
             style={{ color: '#ffffff' }}
           >

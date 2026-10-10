@@ -14,6 +14,17 @@ import {
   getAdminSessionRemainingMs 
 } from '../lib/supabase';
 import SwissLogo from '../components/ui/SwissLogo';
+import { getLocalProject } from '../hooks/useProjects';
+
+function sanitizeSlug(str) {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .replace(/#/g, '-')
+    .replace(/[^a-z0-9-_]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
 
 export default function AdminPage() {
   const [adminUser, setAdminUser] = useState(null);
@@ -187,6 +198,13 @@ export default function AdminPage() {
   const openModal = (proj = null) => {
     if (proj) {
       setEditingProject(proj);
+      const local = getLocalProject(proj.slug || proj.id);
+      const initialMetrics = (Array.isArray(proj.metrics) && proj.metrics.length > 0)
+        ? proj.metrics
+        : (local?.metrics && local.metrics.length > 0
+            ? local.metrics
+            : [{ label: '', value: '' }]);
+
       setFormData({
         title: proj.title || '',
         slug: proj.slug || '',
@@ -200,14 +218,14 @@ export default function AdminPage() {
         hero_image_url: proj.hero_image_url || '',
         video_url: proj.video_url || '',
         summary: proj.summary || '',
-        tags: Array.isArray(proj.tags) ? proj.tags.join(', ') : '',
-        metrics: Array.isArray(proj.metrics) && proj.metrics.length > 0 
-          ? proj.metrics 
-          : [{ label: '', value: '' }],
-        challenge: proj.challenge || '',
-        solution: proj.solution || '',
-        process: proj.process || '',
-        results: proj.results || '',
+        tags: Array.isArray(proj.tags) && proj.tags.length > 0 
+          ? proj.tags.join(', ') 
+          : (local?.tags ? local.tags.join(', ') : ''),
+        metrics: initialMetrics,
+        challenge: proj.challenge || local?.challenge || '',
+        solution: proj.solution || local?.solution || '',
+        process: proj.process || local?.process || '',
+        results: proj.results || local?.results || '',
       });
     } else {
       setEditingProject(null);
@@ -225,7 +243,7 @@ export default function AdminPage() {
         video_url: '',
         summary: '',
         tags: '',
-        metrics: [{ label: 'Performance', value: '100%' }],
+        metrics: [{ label: 'Performance Metric', value: 'Key Outcome' }],
         challenge: '',
         solution: '',
         process: '',
@@ -303,7 +321,7 @@ export default function AdminPage() {
 
     const payload = {
       title: formData.title,
-      slug: formData.slug,
+      slug: sanitizeSlug(formData.slug),
       subtitle: formData.subtitle,
       category: formData.category,
       role: formData.role,
@@ -590,9 +608,20 @@ export default function AdminPage() {
                       {proj.title}
                     </h2>
 
-                    <p className="text-xs text-[#555d70] line-clamp-2 mb-4">
+                    <p className="text-xs text-[#555d70] line-clamp-2 mb-3">
                       {proj.subtitle || proj.summary}
                     </p>
+
+                    {/* Metrics preview */}
+                    {Array.isArray(proj.metrics) && proj.metrics.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {proj.metrics.map((m, mIdx) => (
+                          <span key={mIdx} className="px-2 py-0.5 bg-[#f0f2f5] border border-[rgba(10,10,10,0.08)] rounded font-mono text-[9px] text-[#242938]">
+                            <strong>{m.value}</strong> &bull; {m.label}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions */}
@@ -706,10 +735,16 @@ export default function AdminPage() {
                     type="text"
                     required
                     value={formData.slug}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
-                    placeholder="e.g. lumen-os"
-                    className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border rounded font-sans text-sm"
+                    onChange={(e) => setFormData((prev) => ({ 
+                      ...prev, 
+                      slug: e.target.value.toLowerCase().replace(/#/g, '-').replace(/\s+/g, '-') 
+                    }))}
+                    placeholder="e.g. sed-8"
+                    className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border rounded font-sans text-sm font-mono"
                   />
+                  <p className="text-[10px] text-[#8b8b8b] mt-1 font-mono">
+                    Huruf kecil &amp; tanda hubung (-). Contoh: sed-8 (jangan gunakan # atau spasi).
+                  </p>
                 </div>
               </div>
 
@@ -801,9 +836,14 @@ export default function AdminPage() {
               {/* Metrics Builder */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-[10px] font-bold text-[#6a7285] uppercase">
-                    PERFORMANCE METRICS
-                  </label>
+                  <div>
+                    <label className="text-[10px] font-bold text-[#6a7285] uppercase block">
+                      PERFORMANCE METRICS
+                    </label>
+                    <span className="text-[10px] text-[#8b8b8b]">
+                      Value = teks besar (hasil/pencapaian), Label = keterangan di bawahnya.
+                    </span>
+                  </div>
                   <button
                     type="button"
                     onClick={addMetricRow}
@@ -816,24 +856,29 @@ export default function AdminPage() {
                 <div className="space-y-2">
                   {formData.metrics.map((m, idx) => (
                     <div key={idx} className="flex gap-2 items-center">
-                      <input
-                        type="text"
-                        placeholder="Label (e.g. Sync Latency)"
-                        value={m.label}
-                        onChange={(e) => updateMetric(idx, 'label', e.target.value)}
-                        className="w-1/2 px-3 py-2 bg-[#f8f9fa] border rounded text-xs font-sans"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Value (e.g. < 50ms)"
-                        value={m.value}
-                        onChange={(e) => updateMetric(idx, 'value', e.target.value)}
-                        className="w-1/2 px-3 py-2 bg-[#f8f9fa] border rounded text-xs font-sans"
-                      />
+                      <div className="w-1/2">
+                        <input
+                          type="text"
+                          placeholder="Value (e.g. End-to-End Campaign Strategy)"
+                          value={m.value}
+                          onChange={(e) => updateMetric(idx, 'value', e.target.value)}
+                          className="w-full px-3 py-2 bg-[#f8f9fa] border rounded text-xs font-sans font-semibold text-[#0A0A0A]"
+                        />
+                      </div>
+                      <div className="w-1/2">
+                        <input
+                          type="text"
+                          placeholder="Label (e.g. Integrated Visual System)"
+                          value={m.label}
+                          onChange={(e) => updateMetric(idx, 'label', e.target.value)}
+                          className="w-full px-3 py-2 bg-[#f8f9fa] border rounded text-xs font-sans text-[#555d70]"
+                        />
+                      </div>
                       <button
                         type="button"
                         onClick={() => removeMetric(idx)}
                         className="text-[#8b8b8b] hover:text-[#e0492a] px-2 font-bold"
+                        title="Remove metric"
                       >
                         &times;
                       </button>

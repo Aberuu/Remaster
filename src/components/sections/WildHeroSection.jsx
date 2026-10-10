@@ -345,7 +345,7 @@ export default function WildHeroSection() {
           </div>
           <div className="flex items-center gap-6">
             <span className="hidden md:inline tabular-nums text-[#616a7d]">
-              LOCATION // INDONESIA (LAT -7.79°, LONG 110.37°)
+              LOCATION // INDONESIA (LAT -7.33°, LONG 110.5°)
             </span>
             <span className="font-bold tabular-nums text-[#0A0A0A] bg-[rgba(10,10,10,0.05)] px-2 py-0.5 rounded border border-[rgba(10,10,10,0.08)]">
               {currentTime || 'LOCAL TIME'}
@@ -370,7 +370,7 @@ export default function WildHeroSection() {
                   <span className="inline-block animate-[heroLine_0.95s_steps(6)_both_0.1s]">CRAFT,</span>
                 </span>
                 <span className="block overflow-hidden text-[#0A0A0A]">
-                  <span className="inline-block animate-[heroLine_0.95s_steps(6)_both_0.22s]">ENGINEERED.</span>
+                  <span className="inline-block animate-[heroLine_0.95s_steps(6)_both_0.22s]">& ENGINEERED.</span>
                 </span>
               </h1>
             </div>
@@ -379,9 +379,9 @@ export default function WildHeroSection() {
               <span className="w-1.5 h-1.5 rounded-full bg-[#e0492a]" />
               <span>CREATIVE DIRECTION</span>
               <span className="text-[rgba(10,10,10,0.3)]">/</span>
-              <span>SWISS SYSTEMS</span>
+              <span>VISUAL SYSTEMS</span>
               <span className="text-[rgba(10,10,10,0.3)]">/</span>
-              <span>GENERATIVE CANVAS</span>
+              <span>FRONT-END ENGINEERING</span>
             </div>
           </div>
 
@@ -389,11 +389,11 @@ export default function WildHeroSection() {
           <div className="relative flex flex-col justify-between gap-8 lg:pl-12 lg:border-l lg:border-[rgba(10,10,10,0.14)]">
             <div>
               <p className="text-[clamp(18px,1.9vw,26px)] font-semibold uppercase leading-[1.22] tracking-[-0.015em] text-[#0A0A0A] mb-5">
-                Directing high-contrast visual systems, brutalist digital architecture, and cinematic web experiences.
+                BRIDGING TECHNOLOGY AND CREATIVITY THROUGH COHESIVE DIGITAL EXPERIENCES.
               </p>
               
               <p className="text-sm sm:text-base text-[#2e3442] leading-relaxed max-w-[44ch] font-normal">
-                Synthesizing extreme white space with engineering rigor. Orchestrating modular design tokens, WebGL interaction, and cinematic motion that command visceral attention.
+                Synthesizing modern editorial design with front-end engineering rigor. Orchestrating visual identities, interactive web architectures, and strategic narratives that communicate clear messages.
               </p>
             </div>
 
@@ -418,7 +418,7 @@ export default function WildHeroSection() {
               </a>
 
               <span className="font-mono text-[10px] text-[#4b5262] uppercase tracking-wider sm:ml-auto self-center font-medium">
-                EST. 2026 // ID
+                EST. 2022 // ID
               </span>
             </div>
           </div>
