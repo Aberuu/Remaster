@@ -167,7 +167,7 @@ export default function FootageShowcaseSection() {
 
         {/* Studio Status & Monitor Bar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 font-mono text-xs">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-[rgba(10,10,10,0.15)] rounded-md shadow-sm">
+          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-[rgba(10,10,10,0.15)] rounded-md shadow-sm">
             <span className={`w-2 h-2 rounded-full ${!cycleCompleted && inView ? 'bg-[#e0492a] animate-pulse' : 'bg-[#5e6677]'}`} />
             <span className="font-bold text-[#0A0A0A]">
               {!cycleCompleted 
@@ -181,9 +181,9 @@ export default function FootageShowcaseSection() {
         </div>
       </div>
 
-      {/* Progress Bar of the 30-Second Autoplay Cycle */}
+      {/* Progress Bar of the 30-Second Autoplay Cycle (Desktop Only) */}
       {!cycleCompleted && (
-        <div className="w-full bg-[rgba(10,10,10,0.08)] h-1 rounded-full mb-8 overflow-hidden">
+        <div className="hidden sm:block w-full bg-[rgba(10,10,10,0.08)] h-1 rounded-full mb-8 overflow-hidden">
           <div 
             className="bg-[#e0492a] h-full transition-all duration-1000 ease-linear"
             style={{ width: `${progressPercent}%` }}
@@ -218,7 +218,10 @@ export default function FootageShowcaseSection() {
                 </div>
 
                 {/* Video Container Frame */}
-                <div className="relative w-full aspect-[16/10] bg-[#101217] rounded-xl overflow-hidden border border-[rgba(10,10,10,0.14)] mb-6 shadow-inner">
+                <div 
+                  className="relative w-full aspect-[16/10] bg-[#101217] rounded-xl overflow-hidden border border-[rgba(10,10,10,0.14)] mb-6 shadow-inner cursor-pointer"
+                  onClick={() => openModal(item)}
+                >
                   <video
                     ref={(el) => {
                       if (el) videoRefs.current[item.id] = el;
@@ -249,8 +252,8 @@ export default function FootageShowcaseSection() {
                     </div>
                   </div>
 
-                  {/* Bottom Right Controls (Audio & Cinema View) */}
-                  <div className="absolute bottom-3 right-3 z-10 flex items-center gap-2">
+                  {/* Bottom Right Controls (Desktop Only: hidden on mobile to keep frame clean) */}
+                  <div className="absolute bottom-3 right-3 z-10 hidden sm:flex items-center gap-2">
                     {item.hasAudio && (
                       <button
                         type="button"
@@ -269,7 +272,10 @@ export default function FootageShowcaseSection() {
 
                     <button
                       type="button"
-                      onClick={() => openModal(item)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openModal(item);
+                      }}
                       aria-label={`Open ${item.title} in cinema view`}
                       className="min-h-[36px] px-3 py-1.5 bg-black/80 hover:bg-black text-white rounded font-mono text-[10px] font-bold tracking-wider uppercase border border-white/20 hover:border-white transition-all shadow-md flex items-center gap-1"
                     >
@@ -278,9 +284,9 @@ export default function FootageShowcaseSection() {
                     </button>
                   </div>
 
-                  {/* Replay Overlay Hint when cycle finished and not hovered */}
+                  {/* Replay Overlay Hint when cycle finished and not hovered (Desktop Only) */}
                   {cycleCompleted && !isHovered && (
-                    <div className="absolute inset-0 bg-black/25 backdrop-blur-[1px] flex items-center justify-center pointer-events-none transition-opacity">
+                    <div className="absolute inset-0 bg-black/25 backdrop-blur-[1px] hidden sm:flex items-center justify-center pointer-events-none transition-opacity">
                       <div className="px-3 py-1.5 bg-black/85 border border-white/30 rounded-md font-mono text-[11px] font-bold uppercase tracking-wider text-white">
                         HOVER TO REPLAY
                       </div>
@@ -313,7 +319,7 @@ export default function FootageShowcaseSection() {
                 <button
                   type="button"
                   onClick={() => openModal(item)}
-                  className="font-bold uppercase tracking-wider text-[#0A0A0A] group-hover:text-[#e0492a] inline-flex items-center gap-1 hover:underline underline-offset-4"
+                  className="min-h-[44px] px-3 py-2 font-bold uppercase tracking-wider text-[#0A0A0A] group-hover:text-[#e0492a] inline-flex items-center gap-1.5 hover:underline underline-offset-4 rounded-lg transition-colors"
                 >
                   <span>WATCH MASTER</span>
                   <span>&rarr;</span>
