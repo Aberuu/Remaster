@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { PROFILE } from '../data/portfolioData';
 import { useProjects } from '../hooks/useProjects';
 import WildHeroSection from '../components/sections/WildHeroSection';
+import FootageShowcaseSection from '../components/sections/FootageShowcaseSection';
 
 export default function HomePage() {
   const { projects } = useProjects();
@@ -226,7 +227,10 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ─── SECTION 02: PERSPECTIVE & VISION ─── */}
+        {/* ─── SECTION 02: MOTION & REEL VAULT ─── */}
+        <FootageShowcaseSection />
+
+        {/* ─── SECTION 03: PERSPECTIVE & VISION ─── */}
         <section id="about" className="mb-28 sm:mb-36 scroll-mt-24">
           <div className="bg-white border-2 border-[rgba(10,10,10,0.12)] rounded-3xl p-8 sm:p-14 lg:p-16 shadow-sm">
             <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1.3fr] gap-12 sm:gap-16 items-start">
@@ -234,7 +238,7 @@ export default function HomePage() {
               {/* Left Column: Directorial Manifesto */}
               <div>
                 <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#e0492a] font-bold mb-3">
-                  <span>[02 // DIRECTORIAL PERSPECTIVE]</span>
+                  <span>[03 // DIRECTORIAL PERSPECTIVE]</span>
                 </div>
 
                 <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#0A0A0A] leading-tight uppercase mb-6">
@@ -305,11 +309,11 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ─── SECTION 03: CAPABILITIES & DISCIPLINES ─── */}
+        {/* ─── SECTION 04: CAPABILITIES & DISCIPLINES ─── */}
         <section id="skills" className="mb-28 sm:mb-36 scroll-mt-24">
           <div className="border-b-2 border-[#0A0A0A] pb-5 mb-10">
             <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#e0492a] font-bold mb-1">
-              <span>[03 // CAPABILITY MATRIX]</span>
+              <span>[04 // CAPABILITY MATRIX]</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#0A0A0A] uppercase">
               Disciplines &amp; Advisory
@@ -353,14 +357,14 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ─── SECTION 04: COMMISSIONS & DISPATCH ─── */}
+        {/* ─── SECTION 05: COMMISSIONS & DISPATCH ─── */}
         <section id="contact" className="scroll-mt-24">
           <div className="bg-white border-2 border-[#0A0A0A] rounded-3xl p-8 sm:p-14 lg:p-16 shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
             <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-12 sm:gap-16 items-start">
               
               <div>
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-[rgba(10,10,10,0.05)] border border-[rgba(10,10,10,0.12)] rounded font-mono text-xs tracking-widest text-[#e0492a] font-bold uppercase mb-4">
-                  <span>[04 // INQUIRIES &amp; ADVISORY]</span>
+                  <span>[05 // INQUIRIES &amp; ADVISORY]</span>
                 </div>
 
                 <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#0A0A0A] uppercase leading-[1.05] mb-6">

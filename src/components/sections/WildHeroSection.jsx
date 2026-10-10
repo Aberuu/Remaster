@@ -362,7 +362,7 @@ export default function WildHeroSection() {
           <div className="flex flex-col justify-between">
             <div className="mb-4">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-[rgba(10,10,10,0.04)] border border-[rgba(10,10,10,0.12)] rounded font-mono text-[11px] tracking-widest text-[#e0492a] font-bold uppercase mb-4">
-                <span>[01 // INTRODUCTION]</span>
+                <span>[00 // INTRODUCTION]</span>
               </div>
               
               <h1 className="text-[clamp(44px,7.8vw,110px)] font-bold tracking-[-0.04em] leading-[0.91] uppercase text-[#0A0A0A]">

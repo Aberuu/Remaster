@@ -1,5 +1,7 @@
 import VideoFinal from '../assets/footages/final.mp4';
 import VideoSed from '../assets/footages/sed.mp4';
+import VideoMotion from '../assets/footages/motion.mp4';
+import VideoOrteca from '../assets/footages/orteca.mp4';
 import pj1 from '../assets/images/pj1.webp';
 import pj2 from '../assets/images/pj2.webp';
 import pj3 from '../assets/images/pj3.webp';
@@ -151,3 +153,59 @@ export const FEATURED_PROJECTS = [
     ],
   },
 ];
+
+export const MOTION_FOOTAGES = [
+  {
+    id: 'footage-sed7',
+    title: 'SMUQ Expressive Day #7',
+    subtitle: 'Commercial Event Aftermovie & Multi-Stage Edit',
+    category: 'Aftermovie & Motion Direction',
+    year: '2024',
+    video: VideoFinal,
+    hasAudio: false,
+    tag: 'AFTERMOVIE',
+    duration: '00:30',
+    aspect: '16/9',
+    description: 'Rhythm-driven festival recap capturing concert momentum, bass transients, and dynamic multi-angle stage cuts.',
+  },
+  {
+    id: 'footage-sed8',
+    title: 'SMUQ Expressive Day #8',
+    subtitle: 'Everland Concept Teaser & Social Campaign',
+    category: 'Event Campaign & Concept Reel',
+    year: '2025',
+    video: VideoSed,
+    hasAudio: true,
+    tag: 'CAMPAIGN REEL',
+    duration: '00:29',
+    aspect: '16/9',
+    description: 'Kinetic social campaign teaser establishing the Everland visual universe with synchronized sound design.',
+  },
+  {
+    id: 'footage-motion',
+    title: '31Studio Salatiga',
+    subtitle: 'Commercial Motion Design & Kinetic Identity',
+    category: 'Commercial Use & Motion Graphics',
+    year: '2026',
+    video: VideoMotion,
+    hasAudio: false,
+    tag: 'COMMERCIAL',
+    duration: '00:30',
+    aspect: '4/3',
+    description: 'Commercial motion design engineered for high digital retention, graphic pacing, and studio branding.',
+  },
+  {
+    id: 'footage-orteca',
+    title: 'Orteca Company',
+    subtitle: 'Short-Form Brand Film & Narrative Pacing',
+    category: 'Brand Film & Short-Form Motion',
+    year: '2026',
+    video: VideoOrteca,
+    hasAudio: true,
+    tag: 'BRAND REEL',
+    duration: '00:30',
+    aspect: '4/3',
+    description: 'Short-form brand cuts combining intentional sound pacing, typographic hierarchy, and sharp color grading.',
+  },
+];
+

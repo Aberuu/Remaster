@@ -44,14 +44,17 @@ export default function SwissHeader() {
               <a href="#work" className="hover:text-[#e0492a] transition-colors">
                 [01 COMMISSIONS]
               </a>
+              <a href="#motion" className="hover:text-[#e0492a] transition-colors">
+                [02 MOTION]
+              </a>
               <a href="#about" className="hover:text-[#e0492a] transition-colors">
-                [02 PERSPECTIVE]
+                [03 PERSPECTIVE]
               </a>
               <a href="#skills" className="hover:text-[#e0492a] transition-colors">
-                [03 DISCIPLINES]
+                [04 DISCIPLINES]
               </a>
               <a href="#contact" className="hover:text-[#e0492a] transition-colors">
-                [04 DISPATCH]
+                [05 DISPATCH]
               </a>
             </>
           ) : (
@@ -59,14 +62,17 @@ export default function SwissHeader() {
               <Link to="/#work" className="hover:text-[#e0492a] transition-colors">
                 [01 COMMISSIONS]
               </Link>
+              <Link to="/#motion" className="hover:text-[#e0492a] transition-colors">
+                [02 MOTION]
+              </Link>
               <Link to="/#about" className="hover:text-[#e0492a] transition-colors">
-                [02 PERSPECTIVE]
+                [03 PERSPECTIVE]
               </Link>
               <Link to="/#skills" className="hover:text-[#e0492a] transition-colors">
-                [03 DISCIPLINES]
+                [04 DISCIPLINES]
               </Link>
               <Link to="/#contact" className="hover:text-[#e0492a] transition-colors">
-                [04 DISPATCH]
+                [05 DISPATCH]
               </Link>
             </>
           )}
