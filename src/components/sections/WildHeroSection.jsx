@@ -252,8 +252,10 @@ export default function WildHeroSection() {
 
       ctx.clearRect(0, 0, W, H);
 
+      const isDarkMode = document.documentElement.classList.contains('dark');
+
       // Grid background lines
-      ctx.strokeStyle = '#f3f3f5';
+      ctx.strokeStyle = isDarkMode ? 'rgba(255, 255, 255, 0.055)' : '#f3f3f5';
       ctx.lineWidth = 1;
       ctx.beginPath();
       for (let gx = 0; gx <= W; gx += cell) {
@@ -292,7 +294,7 @@ export default function WildHeroSection() {
 
           if (v < 0.3) continue;
 
-          let col = BANDS[0][1];
+          let col = isDarkMode ? '#293866' : BANDS[0][1];
           if (v >= BANDS[1][0]) col = BANDS[1][1];
           if (v >= BANDS[2][0]) col = BANDS[2][1];
           if (v >= BANDS[3][0]) col = BANDS[3][1];
@@ -323,7 +325,7 @@ export default function WildHeroSection() {
   }, [cellSize, brushSize]);
 
   return (
-    <div className="relative w-full overflow-hidden bg-white text-[#0A0A0A] font-sans select-none border-b border-[rgba(10,10,10,0.12)] min-h-[calc(100vh-52px)] h-[calc(100vh-52px)] flex flex-col justify-between">
+    <div className="relative w-full overflow-hidden bg-white dark:bg-[#0A0A0A] text-[#0A0A0A] dark:text-[#FAF9F6] font-sans select-none border-b border-[rgba(10,10,10,0.12)] dark:border-white/14 min-h-[calc(100vh-52px)] h-[calc(100vh-52px)] flex flex-col justify-between transition-colors duration-200">
       
       {/* ─── Generative Pixel Art Canvas Keyvisual (Scoped to Hero, Pixels on Sides) ─── */}
       <canvas
@@ -334,20 +336,20 @@ export default function WildHeroSection() {
       />
 
       {/* ─── Technical Masthead Sub-Bar ─── */}
-      <div className="relative z-10 w-full shrink-0 border-b border-[rgba(10,10,10,0.08)] bg-white/80 backdrop-blur-sm px-6 sm:px-10 lg:px-14 py-2 font-mono text-[10px] sm:text-[11px] uppercase tracking-wider text-[#434b5c]">
+      <div className="relative z-10 w-full shrink-0 border-b border-[rgba(10,10,10,0.08)] dark:border-white/10 bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-sm px-6 sm:px-10 lg:px-14 py-2 font-mono text-[10px] sm:text-[11px] uppercase tracking-wider text-[#434b5c] dark:text-[#9ca4b8]">
         <div className="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="font-bold text-[#0A0A0A]">{PROFILE.name.toUpperCase()}</span>
-            <span className="text-[rgba(10,10,10,0.3)]">//</span>
-            <span className="font-bold text-[#0A0A0A]">{PROFILE.handle.toUpperCase()}</span>
-            <span className="text-[rgba(10,10,10,0.3)]">//</span>
-            <span className="text-[#3b4252] hidden sm:inline">{PROFILE.title}</span>
+            <span className="font-bold text-[#0A0A0A] dark:text-[#FAF9F6]">{PROFILE.name.toUpperCase()}</span>
+            <span className="text-[rgba(10,10,10,0.3)] dark:text-white/30">//</span>
+            <span className="font-bold text-[#0A0A0A] dark:text-[#FAF9F6]">{PROFILE.handle.toUpperCase()}</span>
+            <span className="text-[rgba(10,10,10,0.3)] dark:text-white/30">//</span>
+            <span className="text-[#3b4252] dark:text-[#b4bccf] hidden sm:inline">{PROFILE.title}</span>
           </div>
           <div className="flex items-center gap-6">
-            <span className="hidden md:inline tabular-nums text-[#616a7d]">
+            <span className="hidden md:inline tabular-nums text-[#616a7d] dark:text-[#8e96a8]">
               LOCATION // INDONESIA (LAT -7.33°, LONG 110.5°)
             </span>
-            <span className="font-bold tabular-nums text-[#0A0A0A] bg-[rgba(10,10,10,0.05)] px-2 py-0.5 rounded border border-[rgba(10,10,10,0.08)]">
+            <span className="font-bold tabular-nums text-[#0A0A0A] dark:text-[#FAF9F6] bg-[rgba(10,10,10,0.05)] dark:bg-white/10 px-2 py-0.5 rounded border border-[rgba(10,10,10,0.08)] dark:border-white/15">
               {currentTime || 'LOCAL TIME'}
             </span>
           </div>
@@ -355,69 +357,67 @@ export default function WildHeroSection() {
       </div>
 
       {/* ─── Hero Core Content Block (.hhead & .hgrid) ─── */}
-      <section className="relative z-10 w-full flex-grow flex items-center bg-white/70 backdrop-blur-[2px] px-6 sm:px-10 lg:px-14 py-6 sm:py-8">
+      <section className="relative z-10 w-full flex-grow flex items-center bg-white/70 dark:bg-[#0A0A0A]/75 backdrop-blur-[2px] px-6 sm:px-10 lg:px-14 py-6 sm:py-8">
         <div className="max-w-[1440px] w-full mx-auto grid grid-cols-1 lg:grid-cols-[1.55fr_1fr] gap-8 lg:gap-14 items-center">
           
           {/* Left Column: Massive High-Contrast Swiss Typography */}
           <div className="flex flex-col justify-between">
             <div className="mb-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[rgba(10,10,10,0.04)] border border-[rgba(10,10,10,0.12)] rounded font-mono text-[11px] tracking-widest text-[#e0492a] font-bold uppercase mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[rgba(10,10,10,0.04)] dark:bg-white/5 border border-[rgba(10,10,10,0.12)] dark:border-white/15 rounded font-mono text-[11px] tracking-widest text-[#e0492a] dark:text-[#ff5a36] font-bold uppercase mb-4">
                 <span>[00 // INTRODUCTION]</span>
               </div>
               
-              <h1 className="text-[clamp(44px,7.8vw,110px)] font-bold tracking-[-0.04em] leading-[0.91] uppercase text-[#0A0A0A]">
+              <h1 className="text-[clamp(44px,7.8vw,110px)] font-bold tracking-[-0.04em] leading-[0.91] uppercase text-[#0A0A0A] dark:text-[#FAF9F6]">
                 <span className="block overflow-hidden">
                   <span className="inline-block animate-[heroLine_0.95s_steps(6)_both_0.1s]">CRAFT,</span>
                 </span>
-                <span className="block overflow-hidden text-[#0A0A0A]">
-                  <span className="inline-block animate-[heroLine_0.95s_steps(6)_both_0.22s]">& ENGINEERED.</span>
+                <span className="block overflow-hidden text-[#0A0A0A] dark:text-[#FAF9F6]">
+                  <span className="inline-block animate-[heroLine_0.95s_steps(6)_both_0.22s]">&amp; ENGINEERED.</span>
                 </span>
               </h1>
             </div>
 
-            <div className="flex items-center gap-2 font-mono text-xs text-[#333a48] uppercase tracking-wider mt-4">
+            <div className="flex items-center gap-2 font-mono text-xs text-[#333a48] dark:text-[#b4bccf] uppercase tracking-wider mt-4">
               <span className="w-1.5 h-1.5 rounded-full bg-[#e0492a]" />
               <span>CREATIVE DIRECTION</span>
-              <span className="text-[rgba(10,10,10,0.3)]">/</span>
+              <span className="text-[rgba(10,10,10,0.3)] dark:text-white/30">/</span>
               <span>VISUAL SYSTEMS</span>
-              <span className="text-[rgba(10,10,10,0.3)]">/</span>
+              <span className="text-[rgba(10,10,10,0.3)] dark:text-white/30">/</span>
               <span>FRONT-END ENGINEERING</span>
             </div>
           </div>
 
           {/* Right Column: Technical Description & Actions */}
-          <div className="relative flex flex-col justify-between gap-8 lg:pl-12 lg:border-l lg:border-[rgba(10,10,10,0.14)]">
+          <div className="relative flex flex-col justify-between gap-8 lg:pl-12 lg:border-l lg:border-[rgba(10,10,10,0.14)] dark:lg:border-white/15">
             <div>
-              <p className="text-[clamp(18px,1.9vw,26px)] font-semibold uppercase leading-[1.22] tracking-[-0.015em] text-[#0A0A0A] mb-5">
+              <p className="text-[clamp(18px,1.9vw,26px)] font-semibold uppercase leading-[1.22] tracking-[-0.015em] text-[#0A0A0A] dark:text-[#FAF9F6] mb-5">
                 BRIDGING TECHNOLOGY AND CREATIVITY THROUGH COHESIVE DIGITAL EXPERIENCES.
               </p>
               
-              <p className="text-sm sm:text-base text-[#2e3442] leading-relaxed max-w-[44ch] font-normal">
+              <p className="text-sm sm:text-base text-[#2e3442] dark:text-[#b4bccf] leading-relaxed max-w-[44ch] font-normal">
                 Synthesizing modern editorial design with front-end engineering rigor. Orchestrating visual identities, interactive web architectures, and strategic narratives that communicate clear messages.
               </p>
             </div>
 
             {/* Technical Button & Identity Cluster */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-6 border-t border-[rgba(10,10,10,0.12)]">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-6 border-t border-[rgba(10,10,10,0.12)] dark:border-white/15">
               <a
                 href="#work"
-                style={{ color: '#ffffff' }}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-mono text-[11px] font-bold uppercase tracking-wider bg-[#0A0A0A] !text-white hover:bg-[#e0492a] transition-all shadow-sm hover:shadow"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-mono text-[11px] font-bold uppercase tracking-wider bg-[#0A0A0A] text-white dark:bg-[#FAF9F6] dark:text-[#0A0A0A] hover:bg-[#e0492a] dark:hover:bg-[#e0492a] dark:hover:text-white transition-all shadow-sm hover:shadow"
               >
-                <span style={{ color: '#ffffff' }}>EXPLORE COMMISSIONS</span>
-                <span style={{ color: '#ffffff' }}>&darr;</span>
+                <span>EXPLORE COMMISSIONS</span>
+                <span>&darr;</span>
               </a>
 
               <a
                 href="#contact"
-                style={{ color: '#0A0A0A' }}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-mono text-[11px] font-bold uppercase tracking-wider border-2 border-[rgba(10,10,10,0.2)] !text-[#0A0A0A] hover:border-[#0A0A0A] hover:bg-black/5 transition-all"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-mono text-[11px] font-bold uppercase tracking-wider border-2 border-[rgba(10,10,10,0.2)] dark:border-white/25 text-[#0A0A0A] dark:text-[#FAF9F6] hover:border-[#0A0A0A] dark:hover:border-white hover:bg-black/5 dark:hover:bg-white/10 transition-all"
               >
-                <span style={{ color: '#0A0A0A' }}>INITIATE DIALOGUE</span>
-                <span style={{ color: '#0A0A0A' }}>&rarr;</span>
+                <span>INITIATE DIALOGUE</span>
+                <span>&rarr;</span>
               </a>
 
-              <span className="font-mono text-[10px] text-[#4b5262] uppercase tracking-wider sm:ml-auto self-center font-medium">
+              <span className="font-mono text-[10px] text-[#4b5262] dark:text-[#8e96a8] uppercase tracking-wider sm:ml-auto self-center font-medium">
                 EST. 2022 // ID
               </span>
             </div>
@@ -427,19 +427,19 @@ export default function WildHeroSection() {
       </section>
 
       {/* ─── Running Kinetic Marquee Strip (Clear High Contrast) ─── */}
-      <div className="relative z-10 w-full shrink-0 bg-[#0A0A0A] py-3 overflow-hidden border-t border-[rgba(10,10,10,0.2)]">
+      <div className="relative z-10 w-full shrink-0 bg-[#0A0A0A] dark:bg-[#121318] py-3 overflow-hidden border-t border-[rgba(10,10,10,0.2)] dark:border-white/15">
         <div className="flex whitespace-nowrap animate-marquee">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="flex items-center gap-6 font-mono text-[11px] uppercase tracking-[0.2em] px-4" style={{ color: '#ffffff' }}>
-              <span style={{ color: '#ffffff' }}>CREATIVE DIRECTION</span>
+            <div key={i} className="flex items-center gap-6 font-mono text-[11px] uppercase tracking-[0.2em] px-4 text-white">
+              <span>CREATIVE DIRECTION</span>
               <span className="text-[#e0492a] font-bold">&lowast;</span>
-              <span style={{ color: '#ffffff' }}>SWISS SYSTEM ARCHITECTURE</span>
+              <span>SWISS SYSTEM ARCHITECTURE</span>
               <span className="text-[#d8ff00] font-bold">&lowast;</span>
-              <span style={{ color: '#ffffff' }}>MOTION &amp; COLOR DIRECTION</span>
+              <span>MOTION &amp; COLOR DIRECTION</span>
               <span className="text-[#e0492a] font-bold">&lowast;</span>
-              <span style={{ color: '#ffffff' }}>TACTILE DIGITAL CRAFT</span>
+              <span>TACTILE DIGITAL CRAFT</span>
               <span className="text-[#d8ff00] font-bold">&lowast;</span>
-              <span style={{ color: '#ffffff' }}>ABERUU // 2026</span>
+              <span>ABERUU // 2026</span>
               <span className="text-[#e0492a] font-bold">&lowast;</span>
             </div>
           ))}
@@ -448,18 +448,17 @@ export default function WildHeroSection() {
 
       {/* ─── Interactive Pixel Controls Floating Toolbar (.pxctl) ─── */}
       <div
-        className="fixed left-4 bottom-4 z-40 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/95 backdrop-blur-md border border-[rgba(10,10,10,0.15)] shadow-lg font-mono text-[10px] uppercase tracking-wider text-[#0A0A0A]"
+        className="fixed left-4 bottom-4 z-40 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/95 dark:bg-[#14161c]/95 backdrop-blur-md border border-[rgba(10,10,10,0.15)] dark:border-white/15 shadow-lg font-mono text-[10px] uppercase tracking-wider text-[#0A0A0A] dark:text-[#FAF9F6]"
         aria-label="Generative Canvas Controls"
       >
-        <span className="text-[#687082] text-[9px] font-bold">GRID:</span>
+        <span className="text-[#687082] dark:text-[#8e96a8] text-[9px] font-bold">GRID:</span>
         <button
           type="button"
           onClick={() => setCellSize(22)}
-          style={{ color: cellSize === 22 ? '#ffffff' : '#0A0A0A' }}
           className={`w-6 h-6 flex items-center justify-center rounded border text-[10px] font-bold transition-all ${
             cellSize === 22
-              ? 'bg-[#0A0A0A] !text-white border-[#0A0A0A]'
-              : 'bg-white !text-[#0A0A0A] border-[rgba(10,10,10,0.15)] hover:border-black'
+              ? 'bg-[#0A0A0A] text-white border-[#0A0A0A] dark:bg-[#FAF9F6] dark:text-[#0A0A0A] dark:border-[#FAF9F6]'
+              : 'bg-white dark:bg-[#1e212b] text-[#0A0A0A] dark:text-[#FAF9F6] border-[rgba(10,10,10,0.15)] dark:border-white/15 hover:border-black dark:hover:border-white'
           }`}
           title="Large Cells (22px)"
         >
@@ -468,11 +467,10 @@ export default function WildHeroSection() {
         <button
           type="button"
           onClick={() => setCellSize(14)}
-          style={{ color: cellSize === 14 ? '#ffffff' : '#0A0A0A' }}
           className={`w-6 h-6 flex items-center justify-center rounded border text-[10px] font-bold transition-all ${
             cellSize === 14
-              ? 'bg-[#0A0A0A] !text-white border-[#0A0A0A]'
-              : 'bg-white !text-[#0A0A0A] border-[rgba(10,10,10,0.15)] hover:border-black'
+              ? 'bg-[#0A0A0A] text-white border-[#0A0A0A] dark:bg-[#FAF9F6] dark:text-[#0A0A0A] dark:border-[#FAF9F6]'
+              : 'bg-white dark:bg-[#1e212b] text-[#0A0A0A] dark:text-[#FAF9F6] border-[rgba(10,10,10,0.15)] dark:border-white/15 hover:border-black dark:hover:border-white'
           }`}
           title="Medium Cells (14px)"
         >
@@ -481,28 +479,26 @@ export default function WildHeroSection() {
         <button
           type="button"
           onClick={() => setCellSize(9)}
-          style={{ color: cellSize === 9 ? '#ffffff' : '#0A0A0A' }}
           className={`w-6 h-6 flex items-center justify-center rounded border text-[10px] font-bold transition-all ${
             cellSize === 9
-              ? 'bg-[#0A0A0A] !text-white border-[#0A0A0A]'
-              : 'bg-white !text-[#0A0A0A] border-[rgba(10,10,10,0.15)] hover:border-black'
+              ? 'bg-[#0A0A0A] text-white border-[#0A0A0A] dark:bg-[#FAF9F6] dark:text-[#0A0A0A] dark:border-[#FAF9F6]'
+              : 'bg-white dark:bg-[#1e212b] text-[#0A0A0A] dark:text-[#FAF9F6] border-[rgba(10,10,10,0.15)] dark:border-white/15 hover:border-black dark:hover:border-white'
           }`}
           title="Small Cells (9px)"
         >
           S
         </button>
 
-        <span className="w-px h-3.5 bg-[rgba(10,10,10,0.15)] mx-1" />
+        <span className="w-px h-3.5 bg-[rgba(10,10,10,0.15)] dark:bg-white/15 mx-1" />
 
-        <span className="text-[#687082] text-[9px] font-bold">BRUSH:</span>
+        <span className="text-[#687082] dark:text-[#8e96a8] text-[9px] font-bold">BRUSH:</span>
         <button
           type="button"
           onClick={() => setBrushSize(16)}
-          style={{ color: brushSize === 16 ? '#ffffff' : '#0A0A0A' }}
           className={`w-6 h-6 flex items-center justify-center rounded border text-[10px] font-bold transition-all ${
             brushSize === 16
-              ? 'bg-[#0A0A0A] !text-white border-[#0A0A0A]'
-              : 'bg-white !text-[#0A0A0A] border-[rgba(10,10,10,0.15)] hover:border-black'
+              ? 'bg-[#0A0A0A] text-white border-[#0A0A0A] dark:bg-[#FAF9F6] dark:text-[#0A0A0A] dark:border-[#FAF9F6]'
+              : 'bg-white dark:bg-[#1e212b] text-[#0A0A0A] dark:text-[#FAF9F6] border-[rgba(10,10,10,0.15)] dark:border-white/15 hover:border-black dark:hover:border-white'
           }`}
           title="Large Brush (16px)"
         >
@@ -511,11 +507,10 @@ export default function WildHeroSection() {
         <button
           type="button"
           onClick={() => setBrushSize(10)}
-          style={{ color: brushSize === 10 ? '#ffffff' : '#0A0A0A' }}
           className={`w-6 h-6 flex items-center justify-center rounded border text-[10px] font-bold transition-all ${
             brushSize === 10
-              ? 'bg-[#0A0A0A] !text-white border-[#0A0A0A]'
-              : 'bg-white !text-[#0A0A0A] border-[rgba(10,10,10,0.15)] hover:border-black'
+              ? 'bg-[#0A0A0A] text-white border-[#0A0A0A] dark:bg-[#FAF9F6] dark:text-[#0A0A0A] dark:border-[#FAF9F6]'
+              : 'bg-white dark:bg-[#1e212b] text-[#0A0A0A] dark:text-[#FAF9F6] border-[rgba(10,10,10,0.15)] dark:border-white/15 hover:border-black dark:hover:border-white'
           }`}
           title="Medium Brush (10px)"
         >
@@ -524,11 +519,10 @@ export default function WildHeroSection() {
         <button
           type="button"
           onClick={() => setBrushSize(6)}
-          style={{ color: brushSize === 6 ? '#ffffff' : '#0A0A0A' }}
           className={`w-6 h-6 flex items-center justify-center rounded border text-[10px] font-bold transition-all ${
             brushSize === 6
-              ? 'bg-[#0A0A0A] !text-white border-[#0A0A0A]'
-              : 'bg-white !text-[#0A0A0A] border-[rgba(10,10,10,0.15)] hover:border-black'
+              ? 'bg-[#0A0A0A] text-white border-[#0A0A0A] dark:bg-[#FAF9F6] dark:text-[#0A0A0A] dark:border-[#FAF9F6]'
+              : 'bg-white dark:bg-[#1e212b] text-[#0A0A0A] dark:text-[#FAF9F6] border-[rgba(10,10,10,0.15)] dark:border-white/15 hover:border-black dark:hover:border-white'
           }`}
           title="Small Brush (6px)"
         >

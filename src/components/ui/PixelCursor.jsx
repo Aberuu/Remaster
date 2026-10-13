@@ -110,7 +110,7 @@ export default function PixelCursor() {
             <span className="absolute bottom-0 left-0 w-1.5 h-1.5 bg-[#e0492a]" />
             <span className="absolute bottom-0 right-0 w-1.5 h-1.5 bg-[#e0492a]" />
             {/* Center Focal Pixel Dot */}
-            <span className="w-1.5 h-1.5 bg-[#0A0A0A] rounded-[0.5px]" />
+            <span className="w-1.5 h-1.5 bg-[#0A0A0A] dark:bg-[#FAF9F6] rounded-[0.5px]" />
           </div>
         ) : (
           /* ─── Default State: Sharp 10-12px Swiss Pixel Block ─── */
@@ -118,7 +118,7 @@ export default function PixelCursor() {
             className={`w-full h-full border-[1.5px] rounded-[1px] transition-colors duration-100 flex items-center justify-center ${
               clicked
                 ? 'bg-[#d8ff00] border-[#0A0A0A]'
-                : 'bg-white border-[#0A0A0A] shadow-[1px_1px_0px_#0A0A0A]'
+                : 'bg-white dark:bg-[#0A0A0A] border-[#0A0A0A] dark:border-[#FAF9F6] shadow-[1px_1px_0px_#0A0A0A] dark:shadow-[1px_1px_0px_#FAF9F6]'
             }`}
           >
             {/* Center Micro Pixel Core */}

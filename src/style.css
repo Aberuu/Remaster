@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 @import './css/tokens.css';
 
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
   --color-bg: var(--color-paper);
   --color-text: var(--color-ink);
@@ -196,3 +198,37 @@ body {
   text-transform: uppercase;
   color: var(--color-text-muted);
 }
+
+/* ─── Studio Admin Portal Dark Mode Surface Mapping ─── */
+.dark .admin-portal article,
+.dark .admin-portal main > div.bg-white,
+.dark .admin-portal div.bg-white {
+  background-color: #121318;
+  color: #FAF9F6;
+  border-color: rgba(250, 249, 246, 0.16);
+}
+
+.dark .admin-portal h1,
+.dark .admin-portal h2,
+.dark .admin-portal h3,
+.dark .admin-portal label {
+  color: #FAF9F6;
+}
+
+.dark .admin-portal p {
+  color: #b4bccf;
+}
+
+.dark .admin-portal input:not([type="checkbox"]):not([type="range"]),
+.dark .admin-portal textarea,
+.dark .admin-portal select {
+  background-color: #1a1c23;
+  color: #FAF9F6;
+  border-color: rgba(250, 249, 246, 0.18);
+}
+
+.dark .admin-portal input::placeholder,
+.dark .admin-portal textarea::placeholder {
+  color: #6b7385;
+}
+

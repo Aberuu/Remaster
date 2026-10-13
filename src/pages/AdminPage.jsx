@@ -20,6 +20,7 @@ import {
   isValidUUID
 } from '../lib/supabase';
 import SwissLogo from '../components/ui/SwissLogo';
+import { useTheme } from '../context/ThemeContext';
 import { 
   getLocalProject, 
   getDeletedProjects, 
@@ -39,6 +40,8 @@ function sanitizeSlug(str) {
 }
 
 export default function AdminPage() {
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
   const [adminUser, setAdminUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [sessionRemainingSec, setSessionRemainingSec] = useState(0);
@@ -748,38 +751,48 @@ export default function AdminPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#fbfbfa] flex items-center justify-center font-mono text-xs uppercase tracking-wider text-[#0A0A0A]">
+      <div className="min-h-screen bg-[#fbfbfa] dark:bg-[#0A0A0A] flex items-center justify-center font-mono text-xs uppercase tracking-wider text-[#0A0A0A] dark:text-[#FAF9F6]">
         <span>INITIALIZING STUDIO ACCESS...</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#fbfbfa] text-[#0A0A0A] font-sans pb-32">
+    <div className="admin-portal min-h-screen bg-[#fbfbfa] dark:bg-[#0A0A0A] text-[#0A0A0A] dark:text-[#FAF9F6] font-sans pb-32 transition-colors duration-200">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-[#0A0A0A] text-white rounded-lg shadow-xl font-mono text-xs font-bold uppercase tracking-wider animate-bounce">
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-[#0A0A0A] dark:bg-[#FAF9F6] text-white dark:text-[#0A0A0A] rounded-lg shadow-xl font-mono text-xs font-bold uppercase tracking-wider animate-bounce">
           {toastMessage}
         </div>
       )}
 
       {/* Top Studio Bar */}
-      <nav className="w-full border-b border-[rgba(10,10,10,0.12)] bg-white/90 backdrop-blur-md px-6 sm:px-10 py-3.5 flex items-center justify-between font-mono text-xs uppercase tracking-wider">
+      <nav className="w-full border-b border-[rgba(10,10,10,0.12)] dark:border-white/14 bg-white/90 dark:bg-[#121318]/90 backdrop-blur-md px-6 sm:px-10 py-3.5 flex items-center justify-between font-mono text-xs uppercase tracking-wider">
         <div className="flex items-center gap-4">
           <Link to="/" className="outline-none">
             <SwissLogo size="sm" />
           </Link>
           <span className="text-[#8b8b8b]">//</span>
-          <span className="font-bold text-[#0A0A0A]">STUDIO ADMIN PORTAL</span>
+          <span className="font-bold text-[#0A0A0A] dark:text-[#FAF9F6]">STUDIO ADMIN PORTAL</span>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <Link 
             to="/" 
-            className="hidden sm:inline hover:text-[#e0492a] transition-colors"
+            className="hidden sm:inline hover:text-[#e0492a] dark:hover:text-[#ff5a36] transition-colors"
           >
             &larr; LIVE SITE
           </Link>
+
+          {/* Theme Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded border border-[rgba(10,10,10,0.16)] dark:border-white/20 bg-white dark:bg-[#1a1c23] text-[#0A0A0A] dark:text-[#FAF9F6] hover:border-[#0A0A0A] dark:hover:border-white text-[10px] font-bold tracking-wider transition-all"
+          >
+            <span>{isDark ? 'LIGHT' : 'DARK'}</span>
+          </button>
 
           {adminUser && (
             <div className="flex items-center gap-2 sm:gap-3">
@@ -789,7 +802,7 @@ export default function AdminPage() {
                 className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded border font-mono text-[10px] sm:text-[11px] font-bold tracking-wider transition-colors ${
                   sessionRemainingSec <= 180
                     ? 'bg-[#fff1f0] border-[#ff4d4f] text-[#cf1322]'
-                    : 'bg-[#f4f5f8] border-[rgba(10,10,10,0.12)] text-[#0A0A0A]'
+                    : 'bg-[#f4f5f8] dark:bg-[#1a1c23] border-[rgba(10,10,10,0.12)] dark:border-white/15 text-[#0A0A0A] dark:text-[#FAF9F6]'
                 }`}
               >
                 <span className={`w-2 h-2 rounded-full ${sessionRemainingSec <= 180 ? 'bg-[#ff4d4f] animate-ping' : 'bg-[#52c41a]'}`} />
@@ -800,7 +813,7 @@ export default function AdminPage() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="px-3 py-1.5 bg-[#f4f5f8] hover:bg-[#e8ebf0] border border-[rgba(10,10,10,0.15)] rounded font-bold transition-all text-[#0A0A0A]"
+                className="px-3 py-1.5 bg-[#f4f5f8] dark:bg-[#1a1c23] hover:bg-[#e8ebf0] dark:hover:bg-[#252833] border border-[rgba(10,10,10,0.15)] dark:border-white/15 rounded font-bold transition-all text-[#0A0A0A] dark:text-[#FAF9F6]"
               >
                 LOGOUT
               </button>

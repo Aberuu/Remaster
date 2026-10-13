@@ -16,7 +16,7 @@ function AppContent() {
   const isAdmin = location.pathname.startsWith('/admin');
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#fbfbfa] text-[#0A0A0A] transition-colors duration-200 relative">
+    <div className="min-h-screen flex flex-col bg-[#fbfbfa] dark:bg-[#0A0A0A] text-[#0A0A0A] dark:text-[#FAF9F6] transition-colors duration-200 relative">
       {!isAdmin && <SwissHeader />}
       <div className={`flex-grow ${isAdmin ? '' : 'pt-[52px]'}`}>
         <Routes>
@@ -27,7 +27,7 @@ function AppContent() {
           <Route 
             path="/admin" 
             element={
-              <Suspense fallback={<div className="min-h-screen bg-[#fbfbfa] flex items-center justify-center font-mono text-xs uppercase text-[#0A0A0A]">INITIALIZING STUDIO ACCESS...</div>}>
+              <Suspense fallback={<div className="min-h-screen bg-[#fbfbfa] dark:bg-[#0A0A0A] flex items-center justify-center font-mono text-xs uppercase text-[#0A0A0A] dark:text-[#FAF9F6]">INITIALIZING STUDIO ACCESS...</div>}>
                 <AdminPage />
               </Suspense>
             } 

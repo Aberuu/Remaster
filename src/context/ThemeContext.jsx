@@ -12,14 +12,14 @@ export function ThemeProvider({ children }) {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('aberuu-theme');
       if (saved === 'light' || saved === 'dark') return saved;
-      if (window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
     }
-    return 'dark'; // Default to Linear-style dark mode
+    return 'light';
   });
 
   useEffect(() => {
     const root = document.documentElement;
     root.setAttribute('data-theme', theme);
+    root.classList.toggle('dark', theme === 'dark');
     localStorage.setItem('aberuu-theme', theme);
   }, [theme]);
 

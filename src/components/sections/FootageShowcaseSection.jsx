@@ -200,27 +200,27 @@ export default function FootageShowcaseSection() {
       className="mb-28 sm:mb-36 scroll-mt-24 font-sans"
     >
       {/* ─── Section Header ─── */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-2 border-[#0A0A0A] pb-5 mb-10 sm:mb-14">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-2 border-[#0A0A0A] dark:border-white/25 pb-5 mb-10 sm:mb-14">
         <div>
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#e0492a] font-bold mb-1">
+          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#e0492a] dark:text-[#ff5a36] font-bold mb-1">
             <span>[02 // MOTION &amp; REEL VAULT]</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#0A0A0A] uppercase">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#0A0A0A] dark:text-[#FAF9F6] uppercase">
             Directed Motion &amp; Footage Archive
           </h2>
         </div>
 
         {/* Studio Status & Monitor Bar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 font-mono text-xs">
-          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-[rgba(10,10,10,0.15)] rounded-md shadow-sm">
+          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-[#121318] border border-[rgba(10,10,10,0.15)] dark:border-white/15 rounded-md shadow-sm">
             <span className={`w-2 h-2 rounded-full ${!cycleCompleted && inView ? 'bg-[#e0492a] animate-pulse' : 'bg-[#5e6677]'}`} />
-            <span className="font-bold text-[#0A0A0A]">
+            <span className="font-bold text-[#0A0A0A] dark:text-[#FAF9F6]">
               {!cycleCompleted 
                 ? `[REC 00:${String(elapsedSeconds).padStart(2, '0')} / 00:30]` 
                 : '[CYCLE COMPLETED // STANDBY]'}
             </span>
           </div>
-          <span className="text-[#5e6677] uppercase text-[11px] font-semibold">
+          <span className="text-[#5e6677] dark:text-[#8e96a8] uppercase text-[11px] font-semibold">
             {String(footages.length).padStart(2, '0')} MASTER REELS &bull; 1080P/4K
           </span>
         </div>
@@ -228,7 +228,7 @@ export default function FootageShowcaseSection() {
 
       {/* Progress Bar of the 30-Second Autoplay Cycle (Desktop Only) */}
       {!cycleCompleted && (
-        <div className="hidden sm:block w-full bg-[rgba(10,10,10,0.08)] h-1 rounded-full mb-8 overflow-hidden">
+        <div className="hidden sm:block w-full bg-[rgba(10,10,10,0.08)] dark:bg-white/10 h-1 rounded-full mb-8 overflow-hidden">
           <div 
             className="bg-[#e0492a] h-full transition-all duration-1000 ease-linear"
             style={{ width: `${progressPercent}%` }}
@@ -253,13 +253,13 @@ export default function FootageShowcaseSection() {
                 title="Click to explore entire showcase gallery"
               >
                 {/* Layer 3: Deepest stacked card */}
-                <div className="absolute inset-0 bg-[#e0492a]/15 rounded-2xl border-2 border-[#0A0A0A] translate-x-3.5 translate-y-3.5 rotate-2 transition-transform duration-300 ease-out group-hover:translate-x-5 group-hover:translate-y-5 group-hover:rotate-3 shadow-sm" />
+                <div className="absolute inset-0 bg-[#e0492a]/15 dark:bg-[#e0492a]/20 rounded-2xl border-2 border-[#0A0A0A] dark:border-white/30 translate-x-3.5 translate-y-3.5 rotate-2 transition-transform duration-300 ease-out group-hover:translate-x-5 group-hover:translate-y-5 group-hover:rotate-3 shadow-sm" />
 
                 {/* Layer 2: Middle stacked card */}
-                <div className="absolute inset-0 bg-white rounded-2xl border-2 border-[#0A0A0A] translate-x-1.5 translate-y-1.5 rotate-1 transition-transform duration-300 ease-out group-hover:translate-x-2.5 group-hover:translate-y-2.5 group-hover:rotate-1.5 shadow-sm" />
+                <div className="absolute inset-0 bg-white dark:bg-[#1a1c23] rounded-2xl border-2 border-[#0A0A0A] dark:border-white/30 translate-x-1.5 translate-y-1.5 rotate-1 transition-transform duration-300 ease-out group-hover:translate-x-2.5 group-hover:translate-y-2.5 group-hover:rotate-1.5 shadow-sm" />
 
                 {/* Layer 1: Front card */}
-                <article className="relative bg-[#0A0A0A] text-white border-2 border-[#0A0A0A] rounded-2xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden shadow-md transition-transform duration-300 ease-out group-hover:-translate-y-1 h-full">
+                <article className="relative bg-[#0A0A0A] dark:bg-[#121318] text-white border-2 border-[#0A0A0A] dark:border-white/25 rounded-2xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden shadow-md transition-transform duration-300 ease-out group-hover:-translate-y-1 h-full">
                   <div>
                     {/* Top Metadata */}
                     <div className="flex items-center justify-between font-mono text-xs uppercase tracking-wider mb-4 pb-3 border-b border-white/20">
@@ -342,26 +342,26 @@ export default function FootageShowcaseSection() {
           return (
             <article 
               key={item.id}
-              className="group bg-white border-2 border-[rgba(10,10,10,0.12)] hover:border-[#0A0A0A] rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between"
+              className="group bg-white dark:bg-[#121318] border-2 border-[rgba(10,10,10,0.12)] dark:border-white/14 hover:border-[#0A0A0A] dark:hover:border-white/40 rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between"
               onMouseEnter={() => handleCardMouseEnter(item.id)}
               onMouseLeave={() => handleCardMouseLeave(item.id)}
             >
               <div>
                 {/* Card Top Metadata Pill */}
-                <div className="flex items-center justify-between font-mono text-xs uppercase tracking-wider mb-4 pb-3 border-b border-[rgba(10,10,10,0.08)]">
+                <div className="flex items-center justify-between font-mono text-xs uppercase tracking-wider mb-4 pb-3 border-b border-[rgba(10,10,10,0.08)] dark:border-white/10">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-[#e0492a]">REEL 0{idx + 1}</span>
+                    <span className="font-bold text-[#e0492a] dark:text-[#ff5a36]">REEL 0{idx + 1}</span>
                     <span className="text-[#8b8b8b]">&bull;</span>
-                    <span className="font-semibold text-[#0A0A0A]">{item.year}</span>
+                    <span className="font-semibold text-[#0A0A0A] dark:text-[#FAF9F6]">{item.year}</span>
                   </div>
-                  <span className="px-2 py-0.5 bg-[#f0f2f5] text-[#1c2230] rounded font-bold text-[10px]">
+                  <span className="px-2 py-0.5 bg-[#f0f2f5] dark:bg-[#1e212b] text-[#1c2230] dark:text-[#d5d9e6] rounded font-bold text-[10px]">
                     {item.tag}
                   </span>
                 </div>
 
                 {/* Video Container Frame */}
                 <div 
-                  className="relative w-full aspect-[16/10] bg-[#101217] rounded-xl overflow-hidden border border-[rgba(10,10,10,0.14)] mb-6 shadow-inner cursor-pointer"
+                  className="relative w-full aspect-[16/10] bg-[#101217] rounded-xl overflow-hidden border border-[rgba(10,10,10,0.14)] dark:border-white/15 mb-6 shadow-inner cursor-pointer"
                   onClick={() => handleToggleCardPlay(item.id)}
                   title="Click to toggle playback"
                 >
@@ -441,30 +441,30 @@ export default function FootageShowcaseSection() {
 
                 {/* Content & Metadata */}
                 <div>
-                  <div className="font-mono text-xs uppercase tracking-wider text-[#e0492a] font-bold mb-1.5">
+                  <div className="font-mono text-xs uppercase tracking-wider text-[#e0492a] dark:text-[#ff5a36] font-bold mb-1.5">
                     {item.category}
                   </div>
 
-                  <h3 className="text-2xl font-bold tracking-tight text-[#0A0A0A] group-hover:text-[#e0492a] transition-colors uppercase mb-2">
+                  <h3 className="text-2xl font-bold tracking-tight text-[#0A0A0A] dark:text-[#FAF9F6] group-hover:text-[#e0492a] dark:group-hover:text-[#ff5a36] transition-colors uppercase mb-2">
                     {item.title}
                   </h3>
 
-                  <p className="text-sm sm:text-base text-[#383f4f] leading-relaxed font-normal mb-4">
+                  <p className="text-sm sm:text-base text-[#383f4f] dark:text-[#b4bccf] leading-relaxed font-normal mb-4">
                     {item.description}
                   </p>
                 </div>
               </div>
 
               {/* Card Footer Bar */}
-              <div className="pt-4 border-t border-[rgba(10,10,10,0.08)] flex items-center justify-between font-mono text-xs">
-                <span className="text-[#6a7285] text-[11px]">
+              <div className="pt-4 border-t border-[rgba(10,10,10,0.08)] dark:border-white/10 flex items-center justify-between font-mono text-xs">
+                <span className="text-[#6a7285] dark:text-[#8e96a8] text-[11px]">
                   ASPECT RATIO: {item.aspect}
                 </span>
 
                 <button
                   type="button"
                   onClick={() => openModal(item)}
-                  className="min-h-[44px] px-3 py-2 font-bold uppercase tracking-wider text-[#0A0A0A] group-hover:text-[#e0492a] inline-flex items-center gap-1.5 hover:underline underline-offset-4 rounded-lg transition-colors"
+                  className="min-h-[44px] px-3 py-2 font-bold uppercase tracking-wider text-[#0A0A0A] dark:text-[#FAF9F6] group-hover:text-[#e0492a] dark:group-hover:text-[#ff5a36] inline-flex items-center gap-1.5 hover:underline underline-offset-4 rounded-lg transition-colors"
                 >
                   <span>WATCH MASTER</span>
                   <span>&rarr;</span>

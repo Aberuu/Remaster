@@ -76,64 +76,63 @@ export default function ShowcasePage() {
   }, [modalVideo, closeModal]);
 
   return (
-    <div className="w-full bg-[#fbfbfa] text-[#0A0A0A] min-h-screen font-sans">
+    <div className="w-full bg-[#fbfbfa] dark:bg-[#0A0A0A] text-[#0A0A0A] dark:text-[#FAF9F6] min-h-screen font-sans transition-colors duration-200">
       <main className="w-full px-6 sm:px-10 md:px-16 lg:px-20 pt-8 sm:pt-12 pb-32 max-w-[1440px] mx-auto">
         
         {/* Top Breadcrumb & Return Bar */}
-        <div className="flex items-center justify-between border-b border-[rgba(10,10,10,0.12)] pb-4 mb-10 sm:mb-14">
+        <div className="flex items-center justify-between border-b border-[rgba(10,10,10,0.12)] dark:border-white/14 pb-4 mb-10 sm:mb-14">
           <Link 
             to="/#motion" 
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[rgba(10,10,10,0.15)] hover:border-[#0A0A0A] rounded-lg font-mono text-xs font-bold text-[#0A0A0A] uppercase tracking-wider transition-all shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#121318] border border-[rgba(10,10,10,0.15)] dark:border-white/15 hover:border-[#0A0A0A] dark:hover:border-white rounded-lg font-mono text-xs font-bold text-[#0A0A0A] dark:text-[#FAF9F6] uppercase tracking-wider transition-all shadow-sm"
           >
             <span>&larr;</span>
             <span>RETURN TO OVERVIEW</span>
           </Link>
 
-          <span className="font-mono text-xs text-[#5e6677] uppercase tracking-wider font-semibold">
+          <span className="font-mono text-xs text-[#5e6677] dark:text-[#8e96a8] uppercase tracking-wider font-semibold">
             GALLERY VAULT // ARCHIVE 2024-2026
           </span>
         </div>
 
         {/* Gallery Title & Header Card */}
-        <header className="bg-white border-2 border-[#0A0A0A] rounded-3xl p-8 sm:p-12 lg:p-14 shadow-sm mb-12 sm:mb-16">
+        <header className="bg-white dark:bg-[#121318] border-2 border-[#0A0A0A] dark:border-white/25 rounded-3xl p-8 sm:p-12 lg:p-14 shadow-sm mb-12 sm:mb-16">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div>
-              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#e0492a] font-bold mb-3">
+              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#e0492a] dark:text-[#ff5a36] font-bold mb-3">
                 <span>[VAULT COMPLETE ARCHIVE]</span>
               </div>
 
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#0A0A0A] uppercase leading-[1.05] mb-4">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#0A0A0A] dark:text-[#FAF9F6] uppercase leading-[1.05] mb-4">
                 Directed Motion &amp; Footage Gallery
               </h1>
 
-              <p className="text-base sm:text-lg text-[#383f4f] leading-relaxed max-w-3xl font-normal">
+              <p className="text-base sm:text-lg text-[#383f4f] dark:text-[#b4bccf] leading-relaxed max-w-3xl font-normal">
                 Explore the complete collection of commercial reels, event aftermovies, and kinetic brand stories. Every cut is edited with surgical rhythm, bespoke color grading, and intentional sound pacing.
               </p>
             </div>
 
             {/* Total Counter Badge */}
             <div className="flex flex-col items-start lg:items-end font-mono">
-              <span className="text-3xl sm:text-4xl font-bold text-[#0A0A0A]">
+              <span className="text-3xl sm:text-4xl font-bold text-[#0A0A0A] dark:text-[#FAF9F6]">
                 {String(footages.length).padStart(2, '0')}
               </span>
-              <span className="text-xs uppercase tracking-wider text-[#5e6677] font-semibold">
+              <span className="text-xs uppercase tracking-wider text-[#5e6677] dark:text-[#8e96a8] font-semibold">
                 MASTER REELS ARCHIVED
               </span>
             </div>
           </div>
 
           {/* Interactive Category Filter Bar */}
-          <div className="flex flex-wrap items-center gap-2 pt-8 mt-8 border-t border-[rgba(10,10,10,0.1)] font-mono text-xs uppercase tracking-wider">
+          <div className="flex flex-wrap items-center gap-2 pt-8 mt-8 border-t border-[rgba(10,10,10,0.1)] dark:border-white/12 font-mono text-xs uppercase tracking-wider">
             {categories.map((cat) => (
               <button
                 key={cat}
                 type="button"
                 onClick={() => setActiveFilter(cat)}
-                style={{ color: activeFilter === cat ? '#ffffff' : '#434b5c' }}
                 className={`px-3.5 py-1.5 rounded-md font-bold transition-all ${
                   activeFilter === cat
-                    ? 'bg-[#0A0A0A] !text-white shadow-sm'
-                    : 'bg-white border border-[rgba(10,10,10,0.15)] !text-[#434b5c] hover:border-[#0A0A0A] hover:text-[#0A0A0A]'
+                    ? 'bg-[#0A0A0A] text-white dark:bg-[#FAF9F6] dark:text-[#0A0A0A] shadow-sm'
+                    : 'bg-white dark:bg-[#1a1c23] border border-[rgba(10,10,10,0.15)] dark:border-white/15 text-[#434b5c] dark:text-[#b4bccf] hover:border-[#0A0A0A] dark:hover:border-white hover:text-[#0A0A0A] dark:hover:text-[#FAF9F6]'
                 }`}
               >
                 {cat} {cat === 'ALL' ? `[${footages.length}]` : ''}
@@ -148,12 +147,12 @@ export default function ShowcasePage() {
             LOADING MOTION VAULT...
           </div>
         ) : filteredFootages.length === 0 ? (
-          <div className="py-24 bg-white border-2 border-dashed border-[rgba(10,10,10,0.2)] rounded-2xl text-center font-mono">
-            <p className="text-sm uppercase text-[#434b5c] mb-4">NO FOOTAGE FOUND IN THIS CATEGORY.</p>
+          <div className="py-24 bg-white dark:bg-[#121318] border-2 border-dashed border-[rgba(10,10,10,0.2)] dark:border-white/20 rounded-2xl text-center font-mono">
+            <p className="text-sm uppercase text-[#434b5c] dark:text-[#b4bccf] mb-4">NO FOOTAGE FOUND IN THIS CATEGORY.</p>
             <button
               type="button"
               onClick={() => setActiveFilter('ALL')}
-              className="px-4 py-2 bg-[#0A0A0A] text-white rounded text-xs font-bold uppercase"
+              className="px-4 py-2 bg-[#0A0A0A] text-white dark:bg-[#FAF9F6] dark:text-[#0A0A0A] rounded text-xs font-bold uppercase"
             >
               RESET FILTER
             </button>
@@ -167,24 +166,24 @@ export default function ShowcasePage() {
               return (
                 <article
                   key={item.id}
-                  className="group bg-white border-2 border-[rgba(10,10,10,0.12)] hover:border-[#0A0A0A] rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between"
+                  className="group bg-white dark:bg-[#121318] border-2 border-[rgba(10,10,10,0.12)] dark:border-white/14 hover:border-[#0A0A0A] dark:hover:border-white/40 rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between"
                 >
                   <div>
                     {/* Top Metadata */}
-                    <div className="flex items-center justify-between font-mono text-xs uppercase tracking-wider mb-4 pb-3 border-b border-[rgba(10,10,10,0.08)]">
+                    <div className="flex items-center justify-between font-mono text-xs uppercase tracking-wider mb-4 pb-3 border-b border-[rgba(10,10,10,0.08)] dark:border-white/10">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-[#e0492a]">REEL 0{idx + 1}</span>
+                        <span className="font-bold text-[#e0492a] dark:text-[#ff5a36]">REEL 0{idx + 1}</span>
                         <span className="text-[#8b8b8b]">&bull;</span>
-                        <span className="font-semibold text-[#0A0A0A]">{item.year}</span>
+                        <span className="font-semibold text-[#0A0A0A] dark:text-[#FAF9F6]">{item.year}</span>
                       </div>
-                      <span className="px-2 py-0.5 bg-[#f0f2f5] text-[#1c2230] rounded font-bold text-[10px]">
+                      <span className="px-2 py-0.5 bg-[#f0f2f5] dark:bg-[#1e212b] text-[#1c2230] dark:text-[#d5d9e6] rounded font-bold text-[10px]">
                         {item.tag}
                       </span>
                     </div>
 
                     {/* Video Container Frame */}
                     <div 
-                      className="relative w-full aspect-[16/10] bg-[#101217] rounded-xl overflow-hidden border border-[rgba(10,10,10,0.14)] mb-6 shadow-inner cursor-pointer"
+                      className="relative w-full aspect-[16/10] bg-[#101217] rounded-xl overflow-hidden border border-[rgba(10,10,10,0.14)] dark:border-white/15 mb-6 shadow-inner cursor-pointer"
                       onClick={() => handleToggleCardPlay(item.id)}
                       title="Click to toggle playback"
                     >
@@ -255,30 +254,30 @@ export default function ShowcasePage() {
 
                     {/* Content & Metadata */}
                     <div>
-                      <div className="font-mono text-xs uppercase tracking-wider text-[#e0492a] font-bold mb-1.5">
+                      <div className="font-mono text-xs uppercase tracking-wider text-[#e0492a] dark:text-[#ff5a36] font-bold mb-1.5">
                         {item.category}
                       </div>
 
-                      <h3 className="text-2xl font-bold tracking-tight text-[#0A0A0A] group-hover:text-[#e0492a] transition-colors uppercase mb-2">
+                      <h3 className="text-2xl font-bold tracking-tight text-[#0A0A0A] dark:text-[#FAF9F6] group-hover:text-[#e0492a] dark:group-hover:text-[#ff5a36] transition-colors uppercase mb-2">
                         {item.title}
                       </h3>
 
-                      <p className="text-sm sm:text-base text-[#383f4f] leading-relaxed font-normal mb-4">
+                      <p className="text-sm sm:text-base text-[#383f4f] dark:text-[#b4bccf] leading-relaxed font-normal mb-4">
                         {item.description}
                       </p>
                     </div>
                   </div>
 
                   {/* Card Footer Bar */}
-                  <div className="pt-4 border-t border-[rgba(10,10,10,0.08)] flex items-center justify-between font-mono text-xs">
-                    <span className="text-[#6a7285] text-[11px]">
+                  <div className="pt-4 border-t border-[rgba(10,10,10,0.08)] dark:border-white/10 flex items-center justify-between font-mono text-xs">
+                    <span className="text-[#6a7285] dark:text-[#8e96a8] text-[11px]">
                       ASPECT RATIO: {item.aspect}
                     </span>
 
                     <button
                       type="button"
                       onClick={() => openModal(item)}
-                      className="min-h-[44px] px-3 py-2 font-bold uppercase tracking-wider text-[#0A0A0A] group-hover:text-[#e0492a] inline-flex items-center gap-1.5 hover:underline underline-offset-4 rounded-lg transition-colors"
+                      className="min-h-[44px] px-3 py-2 font-bold uppercase tracking-wider text-[#0A0A0A] dark:text-[#FAF9F6] group-hover:text-[#e0492a] dark:group-hover:text-[#ff5a36] inline-flex items-center gap-1.5 hover:underline underline-offset-4 rounded-lg transition-colors"
                     >
                       <span>WATCH MASTER</span>
                       <span>&rarr;</span>
